@@ -1,122 +1,70 @@
 <template>
   <div class="app">
     <div class="background-container">
-      <img
-        class="background-image"
-        src="/src/assets/img/Register_Login/Fondo1.jpg"
-        alt="Background Image"
-      />
+      <img class="background-image" src="/src/assets/img/Register_Login/Fondo1.jpg" alt="Background Image" />
       <div class="form-container">
         <h2 class="form-title">Registro</h2>
         <p>Complete los siguientes campos, por favor</p>
         <form @submit.prevent="handleRegisterSubmit" class="text-start">
           <div class="form-group">
-            <input
-              type="text"
-              v-model="firstName"
-              class="form-control"
-              placeholder="Nombres"
-              required
-            />
+            <input type="text" v-model="firstName" class="form-control" placeholder="Nombres" required />
+          </div>
+          <div class="form-group">
+            <input type="text" v-model="lastName" class="form-control" placeholder="Apellidos" required />
+          </div>
+          <div class="form-group">
+            <input type="email" v-model="email" class="form-control" placeholder="Correo electrónico" required />
           </div>
           <div class="form-group">
             <input
               type="text"
-              v-model="lastName"
-              class="form-control"
-              placeholder="Apellidos"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <input
-              type="email"
-              v-model="email"
-              class="form-control"
-              placeholder="Correo electrónico"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <input
-              type="text"
-              v-model="username"
+              :value="email"
               class="form-control"
               placeholder="Nombre de usuario"
-              readonly
+              disabled
               required
             />
           </div>
           <div class="form-group">
-            <input
-              type="password"
-              v-model="password"
-              class="form-control"
-              placeholder="Contraseña"
-              required
-            />
+            <input type="password" v-model="password" class="form-control" placeholder="Contraseña" required />
           </div>
           <div class="form-group">
-            <input
-              type="password"
-              v-model="passwordConf"
-              class="form-control"
-              placeholder="Confirmar contraseña"
-              required
-            />
+            <input type="password" v-model="passwordConf" class="form-control" placeholder="Confirmar contraseña" required />
           </div>
           <div class="form-group">
-            <select v-model="userType" class="form-control" required>
+            <select v-model="roleId" class="form-control" required>
               <option value="" disabled>Selecciona tu rol</option>
-              <option value="student">Estudiante</option>
-              <option value="teacher">Docente</option>
+              <option v-for="rol in roles" :key="rol.roleId" :value="rol.roleId">
+                {{ rol.name }}
+              </option>
             </select>
           </div>
-          <!-- Campo de institución solo para docentes -->
-          <div class="form-group" v-if="userType === 'teacher'">
+          <div class="form-group" v-if="isDocente">
             <select v-model="institucionId" class="form-control" required>
               <option value="" disabled>Selecciona tu institución</option>
-              <option
-                v-for="institucion in instituciones"
-                :key="institucion.institucionId"
-                :value="institucion.institucionId"
-              >
+              <option v-for="institucion in instituciones" :key="institucion.institucionId" :value="institucion.institucionId">
                 {{ institucion.nombre }}
               </option>
             </select>
           </div>
           <div class="validation">
             <div v-for="(validation, index) in validations" :key="index">
-              <Icon
-                :icon="validation.icon"
-                width="16"
-                height="16"
-                :color="validation.color"
-              />
+              <Icon :icon="validation.icon" width="16" height="16" :color="validation.color" />
               <p :class="validation.class">{{ validation.message }}</p>
             </div>
           </div>
-
-          <!-- Reemplazar el componente vue-recaptcha con esto: -->
           <div class="mb-3 d-flex justify-content-center">
             <div id="g-recaptcha" ref="recaptchaContainer"></div>
           </div>
-
           <div class="text-center">
-            <button
-              type="submit"
-              class="btn bg-gradient-info w-100 mt-4 mb-0"
-              :disabled="!captchaVerified"
-            >
+            <button type="submit" class="btn bg-gradient-info w-100 mt-4 mb-0" :disabled="!captchaVerified">
               Registrarse
             </button>
           </div>
         </form>
         <p class="login-message">
           ¿Ya tienes una cuenta?
-          <router-link to="/pages/login"
-            >Inicia sesión aquí</router-link
-          >
+          <router-link to="/pages/login">Inicia sesión aquí</router-link>
         </p>
       </div>
     </div>
@@ -129,36 +77,31 @@
     </div>
   </div>
 </template>
+
 <script>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed, reactive } from 'vue';
 import { Icon } from "@iconify/vue";
 import Swal from "sweetalert2";
 import axios from 'axios';
 
 export default {
-  components: {
-    Icon,
-  },
+  components: { Icon },
   setup() {
     const firstName = ref("");
     const lastName = ref("");
     const email = ref("");
-    const username = ref("");
     const password = ref("");
     const passwordConf = ref("");
-    const userType = ref("");
+    const roleId = ref("");
+    const roles = ref([]);
     const institucionId = ref("");
     const instituciones = ref([]);
     const showSuccessPopup = ref(false);
     const captchaVerified = ref(false);
     const recaptchaContainer = ref(null);
 
-    // Watcher para sincronizar el email con el username
-    watch(email, (newEmail) => {
-      username.value = newEmail;
-    });
-
-    const validations = [
+    // Validaciones reactivas
+    const validations = reactive([
       {
         key: "confirmPassword",
         icon: "fluent:error-circle-20-regular",
@@ -201,19 +144,46 @@ export default {
         class: "validation_error",
         message: "La contraseña debe contener al menos un numero",
       },
-    ];
+    ]);
+
+    // Computed para saber si el rol seleccionado es Docente
+    const isDocente = computed(() => {
+      const selectedRole = roles.value.find(r => r.roleId == roleId.value);
+      return selectedRole && selectedRole.name === "Docente";
+    });
+
+    // Cargar roles desde el backend y filtrar solo Estudiante y Docente
+    const loadRoles = async () => {
+      try {
+        const response = await axios.get("http://localhost:9999/api/v1/roles/all");
+        // Acceder al array de roles anidado
+        const rolesArray = response.data?.result?.result || [];
+        roles.value = rolesArray.filter(
+          r => r.name === "Estudiante" || r.name === "Docente"
+        );
+      } catch (error) {
+        Swal.fire('Error', 'No se pudieron cargar los roles', 'error');
+      }
+    };
+
+    const loadInstituciones = async () => {
+      try {
+        const response = await axios.get("http://localhost:9999/api/v1/instituciones/all");
+        instituciones.value = response.data.result || [];
+      } catch (error) {
+        Swal.fire('Error', 'No se pudieron cargar las instituciones', 'error');
+      }
+    };
 
     // Cargar el script de reCAPTCHA
     onMounted(() => {
-      // Crear elemento script
+      loadRoles();
+      loadInstituciones();
       const script = document.createElement('script');
       script.src = 'https://www.google.com/recaptcha/api.js';
       script.async = true;
       script.defer = true;
-      
-      // Cuando el script se carga, inicializar reCAPTCHA
       script.onload = () => {
-        // Asegurarnos de que grecaptcha existe
         if (window.grecaptcha) {
           setTimeout(() => {
             try {
@@ -227,202 +197,17 @@ export default {
           }, 100);
         }
       };
-      
-      // Agregar script a la página
-      document.head.appendChild(script);
+      if (!document.querySelector('script[src="https://www.google.com/recaptcha/api.js"]')) {
+        document.head.appendChild(script);
+      }
     });
-    
-    // Función llamada cuando el captcha es resuelto correctamente
+
     const onCaptchaSuccess = () => {
       captchaVerified.value = true;
     };
-    
-    const goBack = () => {
-      this.$router.push("/");
-    };
 
-    const showError = (message) => {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: message,
-        showClass: {
-          popup: 'animate__animated animate__bounceIn'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOut'
-        }
-      });
-    };
-
-    const getCurrentDate = () => {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    const loadInstituciones = async () => {
-      try {
-        const response = await axios.get("http://localhost:9999/api/v1/instituciones/all");
-        // El backend retorna un array de objetos con institucionId, nombre, dominioInstitucional
-        instituciones.value = response.data.result || [];
-      } catch (error) {
-        showError("No se pudieron cargar las instituciones.");
-      }
-    };
-
-    const getEmailDomain = (email) => {
-      // Extrae el dominio de un correo electrónico
-      if (!email) return "";
-      const parts = email.split("@");
-      return parts.length === 2 ? parts[1].toLowerCase() : "";
-    };
-
-    const handleRegisterSubmit = async () => {
-      if (!captchaVerified.value) {
-        // Mostrar mensaje de error si el captcha no está validado
-        Swal.fire('Error', 'Por favor, complete el captcha', 'error');
-        return;
-      }
-
-      // Incluir el token del captcha en la solicitud
-      const payload = {
-        firstName: firstName.value,
-        lastName: lastName.value,
-        email: email.value,
-        username: username.value,
-        password: password.value,
-        role: userRole,
-        verification: false,
-        activation: false,
-        dateJoin: currentDate
-      };
-      if (userRole === 2) {
-        payload.institucionId = Number(institucionId.value);
-      }
-      payload.recaptchaToken = captchaResponse.value;
-
-      try {
-        if (
-          !firstName.value ||
-          !lastName.value ||
-          !email.value ||
-          !username.value ||
-          !password.value ||
-          !passwordConf.value
-        ) {
-          showError("Todos los campos obligatorios deben estar llenos.");
-          return;
-        }
-        if (password.value !== passwordConf.value) {
-          showError("Las contraseñas no coinciden.");
-          return;
-        }
-        if (!validatePassword(password.value)) {
-          showError("La contraseña no cumple con los requisitos.");
-          return;
-        }
-        const userRole = userType.value === "student" ? 1 : userType.value === "teacher" ? 2 : null;
-        if (userRole === null) {
-          showError("Debe seleccionar un tipo de usuario válido.");
-          return;
-        }
-        // Validar institucionId correctamente para docentes
-        if (userRole === 2) {
-          const institucionIdNum = Number(institucionId.value);
-          if (!institucionIdNum || institucionIdNum <= 0 || isNaN(institucionIdNum)) {
-            showError("Debe seleccionar una institución válida.");
-            return;
-          }
-          // Validar dominio del correo con el dominio de la institución
-          const institucion = instituciones.value.find(
-            (i) => Number(i.institucionId) === institucionIdNum
-          );
-          if (!institucion) {
-            showError("Debe seleccionar una institución válida.");
-            return;
-          }
-          const emailDomain = getEmailDomain(email.value);
-          const institucionDomain = institucion.dominioInstitucional?.toLowerCase();
-          if (!emailDomain || !institucionDomain || emailDomain !== institucionDomain) {
-            showError(
-              `El correo debe pertenecer al dominio institucional: ${institucionDomain}`
-            );
-            return;
-          }
-        }
-        // No permitir roles 3 ni 4 desde el frontend
-        if (userRole !== 1 && userRole !== 2) {
-          showError("Rol no permitido.");
-          return;
-        }
-        const currentDate = getCurrentDate();
-        // Construir el payload según el backend
-        const payload = {
-          firstName: firstName.value,
-          lastName: lastName.value,
-          email: email.value,
-          username: username.value,
-          password: password.value,
-          role: userRole,
-          verification: false,
-          activation: false,
-          dateJoin: currentDate
-        };
-        if (userRole === 2) {
-          payload.institucionId = Number(institucionId.value);
-        }
-        payload.recaptchaToken = captchaResponse.value;
-
-        const response = await axios.post(
-          "http://localhost:9999/api/v1/user/signup",
-          payload
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Registro exitoso",
-          text: "Te has registrado correctamente.",
-          timer: 2000,
-          showConfirmButton: false
-        });
-        resetForm();
-        this.$router.push('/');
-      } catch (error) {
-        const msg = error.response?.data?.message || "Error al crear la persona";
-        showError(msg);
-      }
-
-      // Reset captcha después de enviar
-      if (window.grecaptcha) {
-        window.grecaptcha.reset();
-        captchaVerified.value = false;
-      }
-    };
-
-    const resetForm = () => {
-      firstName.value = "";
-      lastName.value = "";
-      email.value = "";
-      username.value = "";
-      password.value = "";
-      passwordConf.value = "";
-      userType.value = "";
-      institucionId.value = "";
-    };
-
-    const validatePassword = (password) => {
-      return (
-        password.length >= 12 &&
-        /\d/.test(password) &&
-        /[a-z]/.test(password) &&
-        /[A-Z]/.test(password) &&
-        /[!@#$%^&*()_+\-\[\]{};':"\\|,.<>\/?]/.test(password)
-      );
-    };
-
-    const validateForm = () => {
+    // Validar la contraseña en tiempo real y actualizar colores
+    watch([password, passwordConf], () => {
       validations.forEach((validation) => {
         switch (validation.key) {
           case "confirmPassword":
@@ -488,6 +273,114 @@ export default {
             break;
         }
       });
+    });
+
+    // Validar contraseña antes de enviar
+    const validatePassword = (password) => {
+      return (
+        password.length >= 12 &&
+        /\d/.test(password) &&
+        /[a-z]/.test(password) &&
+        /[A-Z]/.test(password) &&
+        /[!@#$%^&*()_+\-\[\]{};':"\\|,.<>\/?]/.test(password)
+      );
+    };
+
+    // Enviar el formulario
+    const handleRegisterSubmit = async () => {
+      if (!captchaVerified.value) {
+        Swal.fire('Error', 'Por favor, complete el captcha', 'error');
+        return;
+      }
+      if (
+        !firstName.value ||
+        !lastName.value ||
+        !email.value ||
+        !password.value ||
+        !passwordConf.value ||
+        !roleId.value
+      ) {
+        Swal.fire('Error', 'Todos los campos obligatorios deben estar llenos.', 'error');
+        return;
+      }
+      if (password.value !== passwordConf.value) {
+        Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
+        return;
+      }
+      if (!validatePassword(password.value)) {
+        Swal.fire('Error', 'La contraseña no cumple con los requisitos.', 'error');
+        return;
+      }
+
+      // Validar institución si es docente
+      const selectedRole = roles.value.find(r => r.roleId == roleId.value);
+      if (selectedRole && selectedRole.name === "Docente") {
+        if (!institucionId.value) {
+          Swal.fire('Error', 'Debe seleccionar una institución válida.', 'error');
+          return;
+        }
+        const institucion = instituciones.value.find(
+          (i) => Number(i.institucionId) === Number(institucionId.value)
+        );
+        if (!institucion) {
+          Swal.fire('Error', 'Debe seleccionar una institución válida.', 'error');
+          return;
+        }
+        const emailDomain = email.value.split("@")[1]?.toLowerCase();
+        const institucionDomain = institucion.dominioInstitucional?.toLowerCase();
+        if (!emailDomain || !institucionDomain || emailDomain !== institucionDomain) {
+          Swal.fire('Error', `El correo debe pertenecer al dominio institucional: ${institucionDomain}`, 'error');
+          return;
+        }
+      }
+
+      // Construir el payload
+      const payload = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        email: email.value,
+        username: email.value,
+        password: password.value,
+        role: { roleId: Number(roleId.value) },
+        verification: false,
+        activation: false,
+        dateJoin: new Date().toISOString().split("T")[0],
+      };
+      if (selectedRole && selectedRole.name === "Docente") {
+        payload.institucionId = Number(institucionId.value);
+      }
+
+      try {
+        await axios.post(
+          "http://localhost:9999/api/v1/user/signup?roleId=" + roleId.value,
+          payload
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Registro exitoso",
+          text: "Te has registrado correctamente.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        resetForm();
+      } catch (error) {
+        const msg = error.response?.data?.message || "Error al crear la persona";
+        Swal.fire('Error', msg, 'error');
+      }
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+        captchaVerified.value = false;
+      }
+    };
+
+    const resetForm = () => {
+      firstName.value = "";
+      lastName.value = "";
+      email.value = "";
+      password.value = "";
+      passwordConf.value = "";
+      roleId.value = "";
+      institucionId.value = "";
     };
 
     const closePopup = () => {
@@ -498,30 +391,25 @@ export default {
       firstName,
       lastName,
       email,
-      username,
       password,
       passwordConf,
-      userType,
+      roleId,
+      roles,
       institucionId,
       instituciones,
       showSuccessPopup,
       captchaVerified,
       recaptchaContainer,
       handleRegisterSubmit,
-      goBack,
-      showError,
-      getCurrentDate,
-      loadInstituciones,
-      getEmailDomain,
       resetForm,
-      validatePassword,
-      validateForm,
-      closePopup,
-      validations
+      validations,
+      isDocente,
+      closePopup
     };
   }
 };
 </script>
+
 <style scoped>
 /* ...estilos igual que antes... */
 .validation {
@@ -667,8 +555,4 @@ export default {
     padding: 20px;
   }
 }
-
-/* You may want to complete this media query or remove it if not needed */
-/* @media only screen and ... */
-
 </style>

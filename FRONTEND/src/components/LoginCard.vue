@@ -13,13 +13,9 @@
         <input v-model="password" placeholder="Ingrese su contraseña" type="password" required/>
       </div>
       <router-link to="/password-recovery" class="enlace">¿Olvidaste tu contraseña?</router-link>
-      
-      <!-- Asegúrate de que este div esté dentro de tu formulario, justo antes del botón de Submit -->
       <div class="mb-3 d-flex justify-content-center">
         <div id="g-recaptcha-login" ref="recaptchaContainerLogin"></div>
       </div>
-      
-      <!-- Boton que debe tener el atributo disabled -->
       <button 
         type="submit" 
         class="btn bg-gradient-info w-100 mt-4 mb-0"
@@ -53,18 +49,14 @@ export default {
   setup() {
     const captchaVerified = ref(false);
     const recaptchaContainerLogin = ref(null);
-    
+
     // Cargar el script de reCAPTCHA
     onMounted(() => {
-      // Crear elemento script
       const script = document.createElement('script');
       script.src = 'https://www.google.com/recaptcha/api.js';
       script.async = true;
       script.defer = true;
-      
-      // Cuando el script se carga, inicializar reCAPTCHA
       script.onload = () => {
-        // Asegurarnos de que grecaptcha existe
         if (window.grecaptcha) {
           setTimeout(() => {
             try {
@@ -78,12 +70,9 @@ export default {
           }, 100);
         }
       };
-      
-      // Verificar si el script ya está cargado para no duplicarlo
       if (!document.querySelector('script[src="https://www.google.com/recaptcha/api.js"]')) {
         document.head.appendChild(script);
       } else {
-        // Si ya está cargado, intentar renderizar directamente
         setTimeout(() => {
           try {
             if (window.grecaptcha && recaptchaContainerLogin.value) {
@@ -98,12 +87,11 @@ export default {
         }, 100);
       }
     });
-    
-    // Función llamada cuando el captcha es resuelto correctamente
+
     const onCaptchaSuccess = () => {
       captchaVerified.value = true;
     };
-    
+
     return {
       captchaVerified,
       recaptchaContainerLogin,
@@ -123,40 +111,44 @@ export default {
           const appStore = useAppStore();
           const { email, userId, role, verification } = result;
 
+          // Corrección: extraer roleId y roleName del objeto role
+          const roleId = role?.roleId;
+          const roleName = role?.name;
+
           appStore.setIdentificador(userId);
-          appStore.setTipoPersona(role);
+          appStore.setTipoPersona(roleId);
 
           // Guarda el usuario completo en localStorage para uso posterior
           localStorage.setItem('user', JSON.stringify(result));
 
           // Lógica para roles
-          if (role === 1 || role === 2) {
+          if (roleId === 1 || roleId === 2) {
             if (verification) {
               this.randomCode = AuthService.generateCode();
               await AuthService.sendMail(email, this.randomCode);
-              this.$router.push({ name: 'verification-view', params: { userId, role, code: this.randomCode } });
+              this.$router.push({ name: 'verification-view', params: { userId, role: roleId, code: this.randomCode } });
               Swal.fire({
                 title: "Código enviado",
                 text: "Se ha enviado un código de verificación a tu correo",
                 icon: "info",
               });
             } else {
-              this.iniciarSesion(userId, role);
+              this.iniciarSesion(userId, roleId);
             }
-          } else if (role === 3) {
+          } else if (roleName === "AdminPagina") {
             Swal.fire({
               title: "Administrador de Página",
               text: "Has iniciado sesión como Administrador de Página.",
               icon: "info",
             });
-            this.iniciarSesion(userId, role);
-          } else if (role === 4) {
+            this.iniciarSesion(userId, roleId);
+          } else if (roleName === "AdminUsuarios") {
             Swal.fire({
               title: "Administrador de Usuarios",
               text: "Has iniciado sesión como Administrador de Usuarios.",
               icon: "info",
             });
-            this.iniciarSesion(userId, role);
+            this.iniciarSesion(userId, roleId);
           } else {
             Swal.fire({
               title: "Rol no válido",
@@ -176,17 +168,15 @@ export default {
         });
       }
     },
-    iniciarSesion(userId, role) {
+    iniciarSesion(userId, roleId) {
       const appStore = useAppStore();
       appStore.setIdentificador(userId);
-      appStore.setTipoPersona(role);
+      appStore.setTipoPersona(roleId);
       appStore.setLogin(true);
 
-      // Guarda el usuario completo en localStorage (asegúrate de tener el objeto completo)
       localStorage.setItem('user', JSON.stringify({
         userId,
-        role
-        // agrega más campos si los tienes disponibles
+        role: roleId
       }));
 
       Swal.fire({
@@ -196,7 +186,7 @@ export default {
       });
 
       // Redirigir según el rol
-      if (role === 4) {
+      if (roleId === 4) {
         this.$router.push({ name: 'AdminUsuarios' });
       } else {
         this.$router.push("/");
