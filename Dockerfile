@@ -17,7 +17,7 @@ RUN npm run build
 
 # --- ETAPA 2: BUILD DEL BACKEND (SPRING BOOT) ---
 FROM maven:3.8.7-eclipse-temurin-19 AS backend-build-stage
-WORKDIR /SIS-321ELEVATE/BACKEND
+WORKDIR /app/BACKEND
 
 # Copiar el pom.xml o build.gradle para resolver dependencias
 COPY BACKEND/pom.xml .
@@ -31,7 +31,7 @@ COPY BACKEND/src src/
 # Copiar los archivos estáticos de Vue.js construidos a la ubicación de Spring Boot
 # Asegúrate de que esta ruta coincida con donde Spring Boot busca los archivos estáticos.
 # Por defecto, Spring Boot busca en src/main/resources/static/
-COPY --from=frontend-build-stage /SIS-321ELEVATE/FRONTEND src/
+COPY --from=frontend-build-stage /app/FRONTEND src/
 
 # Construir el proyecto Spring Boot (creará el JAR ejecutable)
 RUN mvn package -DskipTests
@@ -40,7 +40,7 @@ RUN mvn package -DskipTests
 FROM openjdk:17-jdk-slim AS final-stage
 
 # Configurar el directorio de trabajo
-WORKDIR /SIS-321ELEVATE
+WORKDIR /app
 
 # Copiar el JAR ejecutable del backend desde la etapa de build del backend
 # El nombre del JAR puede variar, revisa tu target/ o build/libs/
