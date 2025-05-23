@@ -1,0 +1,135 @@
+### Obtener todas las lecciones
+GET http://localhost:9999/api/v1/lessons/all
+Accept: application/json
+
+### Obtener una lección por ID
+GET http://localhost:9999/api/v1/lessons/1
+Accept: application/json
+
+### Obtener lecciones por courseId
+GET http://localhost:9999/api/v1/lessons/course/2
+Accept: application/json
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 1,
+    "title": "Introducción",
+    "description": "Primera lección del curso",
+    "duration": "30 min",
+    "content": "Texto de introducción...",
+    "video": "http://video.url/introduccion.mp4",
+    "order": 1,
+    "complete": false
+}
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 2,
+    "title": "Fundamentos Básicos",
+    "description": "Descripción de los fundamentos básicos",
+    "duration": "45 min",
+    "content": "Contenido de fundamentos básicos...",
+    "video": "http://video.url/fundamentos.mp4",
+    "order": 2,
+    "complete": false
+}
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 2,
+    "title": "Conceptos Avanzados",
+    "description": "Explicación de conceptos avanzados",
+    "duration": "50 min",
+    "content": "Contenido de conceptos avanzados...",
+    "video": "http://video.url/avanzados.mp4",
+    "order": 3,
+    "complete": false
+}
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 2,
+    "title": "Preparación del Entorno",
+    "description": "Cómo preparar el entorno de desarrollo",
+    "duration": "35 min",
+    "content": "Guía para preparar el entorno...",
+    "video": "http://video.url/entorno.mp4",
+    "order": 1,
+    "complete": false
+}
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 2,
+    "title": "Primeros Pasos",
+    "description": "Iniciando el proyecto desde cero",
+    "duration": "40 min",
+    "content": "Primeros pasos en la creación...",
+    "video": "http://video.url/pasos.mp4",
+    "order": 2,
+    "complete": false
+}
+
+### Crear una nueva lección
+POST http://localhost:9999/api/v1/lessons/create
+Content-Type: application/json
+Accept: application/json
+
+{
+    "courseId": 2,
+    "title": "Despliegue",
+    "description": "Guía para el despliegue final",
+    "duration": "30 min",
+    "content": "Proceso de despliegue del proyecto...",
+    "video": "http://video.url/despliegue.mp4",
+    "order": 3,
+    "complete": false
+}
+
+### Obtener lecciones por courseId ordenadas
+GET http://localhost:9999/api/v1/lessons/course/2/ordered
+Accept: application/json
+
+### Actualizar una lección por ID
+PUT http://localhost:9999/api/v1/lessons/{id}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Conceptos Avanzados de Java",
+  "content": "Lección avanzada sobre conceptos avanzados de Java.",
+  "courseId": 2,
+  "duration": 75
+}
+
+### Eliminar una lección por ID
+DELETE http://localhost:9999/api/v1/lessons/{id}
+Accept: application/json
+
+### Obtener lecciones completadas por userId
+GET http://localhost:9999/api/v1/lessons/user/1/course/2/completed
+Accept: application/json
+
+### Marcar una lección como completada
+PUT http://localhost:9999/api/v1/lessons/9/complete
+Accept: application/json
