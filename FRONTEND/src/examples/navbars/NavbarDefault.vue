@@ -236,11 +236,17 @@ const props = defineProps({
 const appStore = useAppStore();
 const isLoggedIn = computed(() => appStore.isLoggedIn);
 const isAdminPage = computed(() => appStore.getTipoPersona === 3);
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const cerrarSesion = () => {
   appStore.logout();
+  localStorage.clear();
   Swal.fire('Éxito', 'Cierre de sesión exitoso', 'success').then(() => {
-    window.location.href = '/'; // Asegúrate de ajustar la ruta a la correcta
+    router.push({ path: "/" }).then(() => {
+      window.location.reload();
+    });
   });
 };
 

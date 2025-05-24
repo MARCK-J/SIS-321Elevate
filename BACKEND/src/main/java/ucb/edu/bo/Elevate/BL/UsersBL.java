@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import ucb.edu.bo.Elevate.DAO.UsersDAO;
 import ucb.edu.bo.Elevate.DAO.RolesDAO;
+import ucb.edu.bo.Elevate.DAO.LogsSeguridadDAO;
 import ucb.edu.bo.Elevate.DTO.ResponseDTO;
 import ucb.edu.bo.Elevate.Entity.Users;
 import ucb.edu.bo.Elevate.Entity.Roles;
@@ -36,6 +37,8 @@ public class UsersBL {
     private RolesDAO rolesDao;
     @Autowired
     private LogsSeguridadBL logsSeguridadBL;
+    @Autowired
+    private LogsSeguridadDAO logsSeguridadDao;
 
     @Autowired
     public UsersBL(
@@ -45,7 +48,8 @@ public class UsersBL {
         InstitucionesDAO institucionesDao,
         VerificationTokenDAO verificationTokenDao,
         RolesDAO rolesDao,
-        LogsSeguridadBL logsSeguridadBL
+        LogsSeguridadBL logsSeguridadBL,
+        LogsSeguridadDAO logsSeguridadDao
     ) {
         this.usersDao = usersDao;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -54,9 +58,10 @@ public class UsersBL {
         this.verificationTokenDao = verificationTokenDao;
         this.rolesDao = rolesDao;
         this.logsSeguridadBL = logsSeguridadBL;
+        this.logsSeguridadDao = logsSeguridadDao;
     }
 
-    // Método privado para registrar logs
+    // Método privado para registrar logs (guarda SIEMPRE el log)
     private void logAction(Long userId, String action, String details, String ipAddress) {
         LogsSeguridad log = new LogsSeguridad();
         log.setUserId(userId);
@@ -64,7 +69,7 @@ public class UsersBL {
         log.setDetails(details);
         log.setIpAddress(ipAddress != null ? ipAddress : "N/A");
         log.setTimestamp(LocalDateTime.now());
-        logsSeguridadBL.createLog(log);
+        logsSeguridadDao.save(log); // Guarda directamente el log
     }
 
     // Registro (Sign-up)

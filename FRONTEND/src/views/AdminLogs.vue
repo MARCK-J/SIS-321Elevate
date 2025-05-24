@@ -15,7 +15,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Aquí irá el listado de logs -->
             <tr v-for="log in logs" :key="log.id">
               <td>{{ log.fecha }}</td>
               <td>{{ log.usuario }}</td>
@@ -30,7 +29,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import Breadcrumbs from '@/examples/Breadcrumbs.vue'
 
 const breadcrumbs = [
@@ -38,9 +38,23 @@ const breadcrumbs = [
   { route: '/admin/logs', label: 'Logs de Seguridad' }
 ]
 
-// Datos de ejemplo (luego se reemplazarán por datos reales)
-const logs = ref([
-  { id: 1, fecha: '2025-05-18 10:00', usuario: 'Juan Pérez', accion: 'Login', detalle: 'Inicio de sesión exitoso' },
-  { id: 2, fecha: '2025-05-18 10:05', usuario: 'Ana Ruiz', accion: 'Error', detalle: 'Contraseña incorrecta' }
-])
+const logs = ref([])
+
+const fetchLogs = async () => {
+  try {
+    const response = await axios.get('http://localhost:9999/api/v1/logs-seguridad/all')
+    // El backend retorna un array de logs con logId, userId, action, details, ipAddress, timestamp
+    logs.value = (response.data.result || []).map(log => ({
+      id: log.logId,
+      fecha: log.timestamp ? new Date(log.timestamp).toLocaleString() : '',
+      usuario: log.userId ?? 'N/A', // Si quieres mostrar el email/nombre, debes hacer otra petición aquí
+      accion: log.action,
+      detalle: log.details
+    }))
+  } catch (e) {
+    logs.value = []
+  }
+}
+
+onMounted(fetchLogs)
 </script>
