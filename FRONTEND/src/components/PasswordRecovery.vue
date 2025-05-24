@@ -27,6 +27,11 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { AuthService } from "../services/authService";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   data() {
     return {
@@ -36,7 +41,7 @@ export default {
   methods: {
     async validarEmail() {
       try {
-        const response = await axios.get(`http://localhost:9999/api/v1/user/email-exists?email=${this.email}`);
+        const response = await axios.get(`${API_BASE_URL}/api/v1/user/email-exists?email=${this.email}`);
         return response.data.result;
       } catch (error) {
         Swal.fire({

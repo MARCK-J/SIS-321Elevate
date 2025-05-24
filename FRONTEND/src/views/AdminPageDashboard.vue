@@ -135,6 +135,11 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import DefaultNavbar from "../examples/navbars/NavbarDefault.vue"
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 const stats = ref({
   users: 0,
   courses: 0,
@@ -194,19 +199,19 @@ const pieLabels = computed(() => {
 onMounted(async () => {
   try {
     // Usuarios
-    const usersRes = await axios.get('http://localhost:9999/api/v1/user/all', {
+    const usersRes = await axios.get(`${API_BASE_URL}/api/v1/user/all`, {
       headers: { Accept: "application/json" }
     });
     stats.value.users = Array.isArray(usersRes.data.result) ? usersRes.data.result.length : 0;
 
     // Cursos
-    const coursesRes = await axios.get('http://localhost:9999/api/v1/courses/all', {
+    const coursesRes = await axios.get(`${API_BASE_URL}/api/v1/courses/all`, {
       headers: { Accept: "application/json" }
     });
     stats.value.courses = Array.isArray(coursesRes.data.result) ? coursesRes.data.result.length : 0;
 
     // Inscripciones
-    const enrollmentsRes = await axios.get('http://localhost:9999/api/v1/enrollments/all', {
+    const enrollmentsRes = await axios.get(`${API_BASE_URL}/api/v1/enrollments/all`, {
       headers: { Accept: "application/json" }
     });
     stats.value.enrollments = Array.isArray(enrollmentsRes.data.result) ? enrollmentsRes.data.result.length : 0;

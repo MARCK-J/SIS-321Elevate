@@ -152,6 +152,11 @@ import MaterialInput from "@/components/MaterialInput.vue";
 import MaterialButton from "@/components/MaterialButton.vue";
 import { RouterLink } from "vue-router";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   components: {
     BaseLayout,
@@ -189,7 +194,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get("http://localhost:9999/api/v1/category/all", {
+        const response = await axios.get(`${API_BASE_URL}/api/v1/category/all`, {
           headers: {
             Accept: "application/json",
           },
@@ -209,19 +214,19 @@ export default {
         const query = this.searchQuery.toLowerCase();
         const filter = this.selectedFilter;
         if (filter === "title") {
-          response = await axios.get(`http://localhost:9999/api/v1/courses/title?title=${query}&page=${page}&size=${this.itemsPerPage}&sort=title`, {
+          response = await axios.get(`${API_BASE_URL}/api/v1/courses/title?title=${query}&page=${page}&size=${this.itemsPerPage}&sort=title`, {
             headers: {
               Accept: "application/json",
             },
           });
         } else if (filter === "rating") {
-          response = await axios.get(`http://localhost:9999/api/v1/courses/rating?rating=${query}&page=${page}&size=${this.itemsPerPage}&sort=rating`, {
+          response = await axios.get(`${API_BASE_URL}/api/v1/courses/rating?rating=${query}&page=${page}&size=${this.itemsPerPage}&sort=rating`, {
             headers: {
               Accept: "application/json",
             },
           });
         } else if (filter === "duration") {
-          response = await axios.get(`http://localhost:9999/api/v1/courses/duration?duration=${query}&page=${page}&size=${this.itemsPerPage}&sort=duration`, {
+          response = await axios.get(`${API_BASE_URL}/api/v1/courses/duration?duration=${query}&page=${page}&size=${this.itemsPerPage}&sort=duration`, {
             headers: {
               Accept: "application/json",
             },

@@ -11,6 +11,11 @@ import { AuthService } from "../../services/authService";
 import ProgressBar from "@/components/ProgressBar.vue";
 import EditCourseModal from "./EditCourseModal.vue";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   props: {
     id: {
@@ -101,7 +106,7 @@ export default {
     async fetchLessonsByCourseId(courseId) {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/lessons/course/${courseId}/ordered`,
+          `${API_BASE_URL}/api/v1/lessons/course/${courseId}/ordered`,
           {
             headers: { Accept: "application/json" },
           }
@@ -123,7 +128,7 @@ export default {
     async fetchCourseById() {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/courses/${this.courseId}`,
+          `${API_BASE_URL}/api/v1/courses/${this.courseId}`,
           {
             headers: { Accept: "application/json" },
           }
@@ -152,7 +157,7 @@ export default {
       if (this.selectedLesson) {
         try {
           const response = await axios.delete(
-            `http://localhost:9999/api/v1/lessons/${this.selectedLesson.lessonsId}`,
+            `${API_BASE_URL}/api/v1/lessons/${this.selectedLesson.lessonsId}`,
             {
               headers: { Accept: "application/json" },
             }
@@ -177,7 +182,7 @@ export default {
     async updateLessonOrder(lesson) {
       try {
         const response = await axios.put(
-          `http://localhost:9999/api/v1/lessons/${lesson.lessonsId}`,
+          `${API_BASE_URL}/api/v1/lessons/${lesson.lessonsId}`,
           {
             order: lesson.order,
           }
@@ -199,7 +204,7 @@ export default {
       console.log('Al marcar como completado: '+lesson.lessonsId);
       try {
         const response = await axios.put(
-          `http://localhost:9999/api/v1/lessons/${lesson.lessonsId}/complete`,
+          `${API_BASE_URL}/api/v1/lessons/${lesson.lessonsId}/complete`,
           );
 
         if (response.data.code === "200-OK") {
@@ -216,7 +221,7 @@ export default {
     async fetchUserData() {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/user/${this.userId}`,
+          `${API_BASE_URL}/api/v1/user/${this.userId}`,
           {
             headers: { Accept: "application/json" },
           }
@@ -237,7 +242,7 @@ export default {
     async fetchEnrollmentId() {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/enrollments/student/${this.userId}`,
+          `${API_BASE_URL}/api/v1/enrollments/student/${this.userId}`,
           {
             headers: { Accept: "application/json" },
           }
@@ -277,7 +282,7 @@ export default {
       this.showPopup = false;
       try {
         const response = await axios.post(
-          "http://localhost:9999/api/v1/enrollments/create",
+          `${API_BASE_URL}/api/v1/enrollments/create`,
           {
             studentUserId: this.userId,
             coursesCourseId: this.courseId,
@@ -344,7 +349,7 @@ export default {
         this.courseData.abilities = this.editContent;
       }
       const response = await axios.put(
-        `http://localhost:9999/api/v1/courses/${this.courseId}`,
+        `${API_BASE_URL}/api/v1/courses/${this.courseId}`,
         { [this.fieldToEdit]: this.editContent }
       );
       console.log(response.data); // Verificar respuesta
@@ -367,7 +372,7 @@ export default {
       try {
         console.log("id del enrollment" + this.enrollmentID);
         const response = await axios.delete(
-          `http://localhost:9999/api/v1/enrollments/${this.enrollmentID}`,
+          `${API_BASE_URL}/api/v1/enrollments/${this.enrollmentID}`,
           {
             headers: { Accept: "application/json" },
           }
@@ -396,7 +401,7 @@ export default {
     async fetchFavoriteCourse() {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/favorites/student/${this.userId}`,
+          `${API_BASE_URL}/api/v1/favorites/student/${this.userId}`,
           {
             headers: { Accept: "application/json" },
           }
@@ -435,7 +440,7 @@ export default {
       if (!this.isFavorito) {
         try {
         const response = await axios.post(
-          "http://localhost:9999/api/v1/favorites/add",
+          `${API_BASE_URL}/api/v1/favorites/add`,
           {
             courseId: this.courseId,
             studentUserId: this.userId,

@@ -73,6 +73,11 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   props: {
     show: Boolean,
@@ -92,7 +97,7 @@ export default {
           ...this.course,
           abilities,
         };
-        await axios.put(`http://localhost:9999/api/v1/courses/${this.courseId}`, payload);
+        await axios.put(`${API_BASE_URL}/api/v1/courses/${this.courseId}`, payload);
         Swal.fire({
           title: "Curso Actualizado",
           text: "El curso ha sido actualizado exitosamente.",
@@ -113,7 +118,7 @@ export default {
     },
     async fetchCategories() {
       try {
-        const response = await axios.get("http://localhost:9999/api/v1/category/all");
+        const response = await axios.get(`${API_BASE_URL}/api/v1/category/all`);
         this.categories = response.data.result;
       } catch (error) {
         console.error("Error al obtener las categorías:", error);

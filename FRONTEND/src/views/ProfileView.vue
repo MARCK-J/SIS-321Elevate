@@ -173,6 +173,11 @@ import MaterialButton from "@/components/MaterialButton.vue";
 import { AuthService } from "../services/authService";
 import { Modal } from 'bootstrap'; // Importa Bootstrap Modal para cerrarlo programáticamente
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 
 export default {
   components: {
@@ -200,7 +205,7 @@ export default {
     const getUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/user/${identificador}`
+          `${API_BASE_URL}/api/v1/user/${identificador}`
         );
         const userData = response.data.result;
 
@@ -247,7 +252,7 @@ export default {
 
         // Hacer la solicitud PUT para actualizar el perfil
         await axios.put(
-          `http://localhost:9999/api/v1/user/${identificador}`,
+          `${API_BASE_URL}/api/v1/user/${identificador}`,
           payload
         );
 
@@ -293,7 +298,7 @@ export default {
         await AuthService.sendActivation(email.value);
         // Hacer la solicitud PUT para actualizar el perfil
         await axios.put(
-          `http://localhost:9999/api/v1/user/${identificador}`,
+          `${API_BASE_URL}/api/v1/user/${identificador}`,
           payload
         );
 

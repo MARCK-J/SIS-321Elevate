@@ -77,6 +77,11 @@
 import axios from "axios";
 import Swal from "sweetalert2";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   props: {
     show: {
@@ -102,7 +107,7 @@ export default {
     async fetchLessons() {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/lessons/course/${this.courseId}`,
+          `${API_BASE_URL}/api/v1/lessons/course/${this.courseId}`,
           {
             headers: {
               Accept: "application/json",
@@ -121,7 +126,7 @@ export default {
     async createQuiz() {
       try {
         await axios.post(
-          "http://localhost:9999/api/v1/quizzes",
+          `${API_BASE_URL}/api/v1/quizzes`,
           {
             title: this.quizTitle,
             description: this.quizDescription,

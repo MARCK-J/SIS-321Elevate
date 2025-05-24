@@ -47,6 +47,11 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useAppStore } from "@/stores";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   data() {
     return {
@@ -90,7 +95,7 @@ export default {
       const email = authStore.email;
 
       try {
-        const response = await axios.post("http://localhost:9999/api/v1/user/change-password", {
+        const response = await axios.post(`${API_BASE_URL}/api/v1/user/change-password`, {
           email: email,
           newPassword: this.newPassword,
         });

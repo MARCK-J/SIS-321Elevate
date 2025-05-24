@@ -46,6 +46,11 @@
   import { RouterLink } from "vue-router";
   import { ref, onMounted } from "vue";
   import { useAppStore } from "@/stores";
+
+  // Define la URL base de la API usando la variable de entorno
+  // Esto se resolverá a "http://localhost:9999" en desarrollo
+  // y a "https://tu-backend-render-url.onrender.com" en producción
+  const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
   
   export default {
     components: {
@@ -68,14 +73,14 @@
         try {
           let response;
           const id = store.getIdentificador;
-          response = await axios.get(`http://localhost:9999/api/v1/favorites/student/${id}`, {
+          response = await axios.get(`${API_BASE_URL}/api/v1/favorites/student/${id}`, {
             headers: { Accept: "application/json" },
           });
           if (response.data.code === "200-OK") {
             const enrollments = response.data.result;
             const coursePromises = enrollments.map((enrollment) =>
               axios
-                .get(`http://localhost:9999/api/v1/courses/${enrollment.courseId}`, {
+                .get(`${API_BASE_URL}/api/v1/courses/${enrollment.courseId}`, {
                   headers: { Accept: "application/json" },
                 })
                 .then((courseResponse) => ({
@@ -102,7 +107,7 @@
   
       const unsubscribe = async () => {
         try {
-          const response = await axios.delete(`http://localhost:9999/api/v1/enrollments/${selectedCourseId.value}`, {
+          const response = await axios.delete(`${API_BASE_URL}/api/v1/enrollments/${selectedCourseId.value}`, {
             headers: { Accept: "application/json" },
           });
           if (response.data.code === "200-OK") {

@@ -7,6 +7,11 @@ import BaseLayout from "../../layouts/sections/components/BaseLayout.vue";
 import View from "../../layouts/sections/components/View.vue";
 import QuestionModal from './QuestionModal.vue';
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 // Acceder a la ruta actual
 const route = useRoute();
 
@@ -23,7 +28,7 @@ const showModal = ref(false);
 // Función para obtener los detalles del cuestionario y sus preguntas
 const fetchQuizDetails = async () => {
   try {
-    const response = await axios.get(`http://localhost:9999/api/v1/quizzes/${quizId.value}`, {
+    const response = await axios.get(`${API_BASE_URL}/api/v1/quizzes/${quizId.value}`, {
       headers: {
         Accept: 'application/json',
       },
@@ -31,7 +36,7 @@ const fetchQuizDetails = async () => {
     quiz.value = response.data.result;
 
     // Obtener las preguntas del cuestionario
-    const questionsResponse = await axios.get(`http://localhost:9999/api/v1/questions/quiz/${quizId.value}`, {
+    const questionsResponse = await axios.get(`${API_BASE_URL}/api/v1/questions/quiz/${quizId.value}`, {
       headers: {
         Accept: 'application/json',
       },
@@ -43,7 +48,7 @@ const fetchQuizDetails = async () => {
     if (Array.isArray(questionsData)) {
       // Obtener las opciones para cada pregunta
       for (const question of questionsData) {
-        const optionsResponse = await axios.get(`http://localhost:9999/api/v1/options/question/${question.questionId}`, {
+        const optionsResponse = await axios.get(`${API_BASE_URL}/api/v1/options/question/${question.questionId}`, {
           headers: {
             Accept: 'application/json',
           },

@@ -135,6 +135,11 @@ import { Icon } from "@iconify/vue";
 import Swal from "sweetalert2";
 import axios from 'axios';
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   components: {
     Icon,
@@ -265,7 +270,7 @@ export default {
 
     const loadInstituciones = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/v1/instituciones/all");
+        const response = await axios.get(`${API_BASE_URL}/api/v1/instituciones/all`);
         // El backend retorna un array de objetos con institucionId, nombre, dominioInstitucional
         instituciones.value = response.data.result || [];
       } catch (error) {
@@ -377,7 +382,7 @@ export default {
         payload.recaptchaToken = captchaResponse.value;
 
         const response = await axios.post(
-          "http://localhost:9999/api/v1/user/signup",
+          `${API_BASE_URL}/api/v1/user/signup`,
           payload
         );
         Swal.fire({

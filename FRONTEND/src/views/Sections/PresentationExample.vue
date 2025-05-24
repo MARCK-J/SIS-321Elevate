@@ -6,6 +6,11 @@
   import DefaultImage from "@/assets/img/defaultCourse.jpg";
   import { useRouter } from 'vue-router'; // Importar useRouter
 
+  // Define la URL base de la API usando la variable de entorno
+  // Esto se resolverá a "http://localhost:9999" en desarrollo
+  // y a "https://tu-backend-render-url.onrender.com" en producción
+  const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
   // Estado para almacenar los datos
   const data = ref([]);
   const router = useRouter(); // Crear instancia de router
@@ -13,7 +18,7 @@
   // Función para obtener las categorías desde el endpoint
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:9999/api/v1/category/all");
+      const response = await axios.get(`${API_BASE_URL}/api/v1/category/all`);
       if (response.data.code === "200-OK") {
         return response.data.result; // Devuelve las categorías
       } else {
@@ -29,7 +34,7 @@
   // Función para obtener los cursos desde el endpoint
   const fetchCourses = async () => {
     try {
-      const response = await axios.get("http://localhost:9999/api/v1/courses/all");
+      const response = await axios.get(`${API_BASE_URL}/api/v1/courses/all`);
       if (response.data.code === "200-OK") {
         return response.data.result; // Devuelve los cursos
       } else {

@@ -55,6 +55,11 @@
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   props: {
     show: {
@@ -85,7 +90,7 @@ export default {
     },
     async createQuestion() {
       try {
-        const questionResponse = await axios.post('http://localhost:9999/api/v1/questions', {
+        const questionResponse = await axios.post(`${API_BASE_URL}/api/v1/questions`, {
           quizId: this.quizId,
           content: this.questionContent,
           questionType: this.questionType,
@@ -100,7 +105,7 @@ export default {
 
         // Crear las opciones
         for (const option of this.options) {
-          await axios.post('http://localhost:9999/api/v1/options', {
+          await axios.post(`${API_BASE_URL}/api/v1/options`, {
             questionId: questionId,
             content: option.content,
             correct: option.correct,

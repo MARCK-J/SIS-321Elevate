@@ -67,6 +67,11 @@
 <script>
 import axios from 'axios';
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   data() {
     return {
@@ -119,7 +124,7 @@ export default {
 
       try {
         // Crear el quiz
-        const quizResponse = await axios.post('http://localhost:9999/api/v1/quizzes', {
+        const quizResponse = await axios.post(`${API_BASE_URL}/api/v1/quizzes`, {
           title: this.quizTitulo,
           description: this.quizDescripcion,
           dueDate: this.quizFechaLimite,
@@ -130,7 +135,7 @@ export default {
 
         // Crear preguntas y opciones
         for (const pregunta of this.preguntas) {
-          const questionResponse = await axios.post('http://localhost:9999/api/v1/questions', {
+          const questionResponse = await axios.post(`${API_BASE_URL}/api/v1/questions`, {
             quizId: quizId,
             content: pregunta.texto,
             questionType: 'multiple choice'
@@ -140,7 +145,7 @@ export default {
           const questionId = questionResponse.data.id;
 
           for (const [rIndex, respuesta] of pregunta.respuestas.entries()) {
-            await axios.post('http://localhost:9999/api/v1/options', {
+            await axios.post(`${API_BASE_URL}/api/v1/options`, {
               questionId: questionId,
               content: respuesta.texto,
               isCorrect: rIndex === pregunta.respuestaCorrecta

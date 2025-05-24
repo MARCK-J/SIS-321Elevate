@@ -24,6 +24,11 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 import BaseLayout from "../layouts/sections/components/BaseLayout.vue";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   components: {
     BaseLayout,
@@ -39,7 +44,7 @@ export default {
     const fetchQuizById = async (quizId) => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/quizzes/${quizId.value}`
+          `${API_BASE_URL}/api/v1/quizzes/${quizId.value}`
         );
         quizData.value = response.data.result;
       } catch (error) {
@@ -51,13 +56,13 @@ export default {
     const fetchQuestionsByQuizId = async (quizId) => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/questions/quiz/${quizId.value}`
+          `${API_BASE_URL}/api/v1/questions/quiz/${quizId.value}`
         );
         const questionsData = response.data.result;
         if (Array.isArray(questionsData)) {
           for (const question of questionsData) {
             const optionsResponse = await axios.get(
-              `http://localhost:9999/api/v1/options/question/${question.questionId}`
+              `${API_BASE_URL}/api/v1/options/question/${question.questionId}`
             );
             question.options = optionsResponse.data.result;
           }

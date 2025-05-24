@@ -110,6 +110,11 @@ import BaseLayout from "../layouts/sections/components/BaseLayout.vue";
 import axios from "axios";
 import { useAppStore } from "@/stores";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   components: {
     BaseLayout,
@@ -133,7 +138,7 @@ export default {
     const fetchLessonById = async (lessonId) => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/lessons/${lessonId.value}`, // Usar el lessonId para la consulta
+          `${API_BASE_URL}/api/v1/lessons/${lessonId.value}`, // Usar el lessonId para la consulta
           {
             headers: {
               Accept: "application/json",
@@ -156,7 +161,7 @@ export default {
     const fetchQuizzesByLessonId = async (lessonId) => {
       try {
         const response = await axios.get(
-          `http://localhost:9999/api/v1/quizzes/lesson/${lessonId.value}`
+          `${API_BASE_URL}/api/v1/quizzes/lesson/${lessonId.value}`
         );
         quizzes.value = response.data.result;
       } catch (error) {
@@ -203,7 +208,7 @@ export default {
     const saveLesson = async () => {
       try {
         const response = await axios.put(
-          `http://localhost:9999/api/v1/lessons/${lessonId.value}`,
+          `${API_BASE_URL}/api/v1/lessons/${lessonId.value}`,
           editableLessonData.value,
           {
             headers: {

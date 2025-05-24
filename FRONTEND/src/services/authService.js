@@ -1,11 +1,15 @@
 import axios from "axios";
 import { useAppStore } from "@/stores"; 
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
 
 export const AuthService = {
   // Función de inicio de sesión
   async login(email, password) {
-    const response = await axios.post("http://localhost:9999/api/v1/user/login", {
+    const response = await axios.post(`${API_BASE_URL}/api/v1/user/login`, {
       email,
       password,
     });
@@ -24,7 +28,7 @@ export const AuthService = {
 
   // Función para enviar el correo con el código
   async sendMail(email, code) {
-    const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+    const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
     const data = {
         subject: "Código de Verificación - Autenticación en Dos Pasos",
         message: `
@@ -65,7 +69,7 @@ export const AuthService = {
   },
   // Función para enviar el correo de activación de cuenta
 async sendActivation(email) {
-  const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
   const data = {
     subject: "Activación de Cuenta - Elevate",
     message: `
@@ -93,7 +97,7 @@ async sendActivation(email) {
 },
 // Función para enviar el correo de confirmación de inscripción de curso
 async sendConfirmation(email, course, fecha,duracion) {
-  const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
   const data = {
     subject: `Confirmación de Inscripción de Curso - Elevate`,
     message: `
@@ -130,7 +134,7 @@ async sendPasswordRecoveryCode(email) {
   const recoveryCode = this.generateCode(); // Genera un solo código
   const authStore = useAppStore(); // Inicializa la tienda solo una vez
 
-  const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
   const data = {
     subject: "Código de Recuperación de Contraseña - Elevate",
     message: `
@@ -163,7 +167,7 @@ async sendPasswordRecoveryCode(email) {
 
 // Nueva función para enviar el correo de desuscripción de curso
 async sendUnsubscriptionEmail(email, courseTitle) {
-  const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
   const data = {
     subject: "Desuscripción de Curso - Elevate",
     message: `
@@ -188,7 +192,7 @@ async sendUnsubscriptionEmail(email, courseTitle) {
 
 // Función para enviar el correo de recepción de comentarios/quejas del usuario
 async sendFeedbackEmail(name, email, feedback) {
-  const url = `http://localhost:9999/api/v1/mail/send/${email}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${email}`;
   const data = {
     subject: "Recepción de Comentarios/Quejas - Elevate",
     message: `
@@ -215,7 +219,7 @@ async sendFeedbackEmail(name, email, feedback) {
 
 // Función para enviar el correo de reporte de comentarios/quejas del usuario al técnico
 async sendFeedbackReportEmail(name, userEmail, feedback, technicianEmail) {
-  const url = `http://localhost:9999/api/v1/mail/send/${technicianEmail}`;
+  const url = `${API_BASE_URL}/api/v1/mail/send/${technicianEmail}`;
   const data = {
     subject: "Reporte de Comentarios/Quejas del Usuario - Elevate",
     message: `

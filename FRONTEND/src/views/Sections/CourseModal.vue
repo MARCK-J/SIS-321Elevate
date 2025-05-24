@@ -68,6 +68,11 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import MaterialButton from "@/components/MaterialButton.vue";
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 export default {
   components: {
     MaterialButton,
@@ -108,7 +113,7 @@ export default {
 
         // Realizar la solicitud POST para crear la lección
         const response = await axios.post(
-          "http://localhost:9999/api/v1/lessons/create",
+          `${API_BASE_URL}/api/v1/lessons/create`,
           newLesson,
           {
             headers: {

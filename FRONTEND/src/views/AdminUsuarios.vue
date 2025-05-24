@@ -111,6 +111,11 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import Breadcrumbs from '@/examples/Breadcrumbs.vue'
 
+// Define la URL base de la API usando la variable de entorno
+// Esto se resolverá a "http://localhost:9999" en desarrollo
+// y a "https://tu-backend-render-url.onrender.com" en producción
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
+
 const breadcrumbs = [
   { route: '/', label: 'Inicio' },
   { route: '/admin/usuarios', label: 'Administrador de Usuarios' }
@@ -141,7 +146,7 @@ onMounted(() => {
 
 async function cargarUsuarios() {
   try {
-    const response = await axios.get('http://localhost:9999/api/v1/user/all')
+    const response = await axios.get(`${API_BASE_URL}/api/v1/user/all`)
     if (response.data.code === "200-OK") {
       usuarios.value = response.data.result
     } else {
@@ -205,7 +210,7 @@ async function guardarUsuario() {
     if (usuarioEditando.value) {
       // Modificar usuario existente
       await axios.put(
-        `http://localhost:9999/api/v1/user/${usuarioEditando.value.userId}`,
+        `${API_BASE_URL}/api/v1/user/${usuarioEditando.value.userId}`,
         payload
       )
       Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success')
@@ -220,7 +225,7 @@ async function guardarUsuario() {
           return
         }
         await axios.post(
-          'http://localhost:9999/api/v1/user/admin/create',
+          `${API_BASE_URL}/api/v1/user/admin/create`,
           payload,
           {
             headers: {
@@ -234,7 +239,7 @@ async function guardarUsuario() {
       } else {
         // Crear estudiante/docente usando endpoint normal
         await axios.post(
-          'http://localhost:9999/api/v1/user/signup',
+          `${API_BASE_URL}/api/v1/user/signup`,
           payload,
           {
             headers: {
@@ -264,7 +269,7 @@ async function eliminarUsuario(usuario) {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:9999/api/v1/user/${usuario.userId}`)
+        await axios.delete(`${API_BASE_URL}/api/v1/user/${usuario.userId}`)
         Swal.fire('Eliminado', 'Usuario eliminado correctamente', 'success')
         cargarUsuarios()
       } catch (error) {
@@ -280,7 +285,7 @@ async function asignarRol(usuario) {
       ...usuario,
       role: usuario.role
     }
-    await axios.put(`http://localhost:9999/api/v1/user/${usuario.userId}`, payload)
+    await axios.put(`${API_BASE_URL}/api/v1/user/${usuario.userId}`, payload)
     Swal.fire('Éxito', 'Rol actualizado correctamente', 'success')
     cargarUsuarios()
   } catch (error) {
