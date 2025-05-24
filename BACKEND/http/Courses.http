@@ -37,7 +37,7 @@ Accept: application/json
   "abilities": "Conocimientos básicos;leer musica;evaluacion de oido",
   "available": true,
   "categoryCourseId": 5,
-  "teacherUserId": 2
+  "teacherUserId": 3
 }
 
 ### Actualizar un curso existente
@@ -54,7 +54,7 @@ Accept: application/json
   "abilities": "Conocimientos avanzados;leer musica;composición",
   "available": true,
   "categoryCourseId": 5,
-  "teacherUserId":  1
+  "teacherUserId":  3
 }
 
 ### Eliminar un curso por ID

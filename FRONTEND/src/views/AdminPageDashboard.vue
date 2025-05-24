@@ -54,68 +54,119 @@
           <div class="dashboard-section">
             <h2>Resumen General</h2>
             <div class="grid-container">
-              <!-- grafico de barras svg, inscripciones por mes (ejemplo) -->
+              <!-- Estadística de usuarios por tipo -->
               <div class="chart-card">
-                <h3>Inscripciones Mensuales</h3>
+                <h3>Usuarios por Tipo</h3>
                 <div class="svg-chart-container">
                   <svg viewBox="0 0 400 200" class="bar-chart">
-                    <rect v-for="(value, index) in enrollmentData" 
-                      :key="index"
-                      :x="index * 60 + 10" 
-                      :y="200 - value * 2" 
-                      width="40" 
-                      :height="value * 2"
+                    <rect
+                      x="60"
+                      :y="200 - userStats.estudiantes * 2"
+                      width="80"
+                      :height="userStats.estudiantes * 2"
+                      fill="#6a8c7d"
+                      rx="4"
+                    />
+                    <rect
+                      x="200"
+                      :y="200 - userStats.docentes * 2"
+                      width="80"
+                      :height="userStats.docentes * 2"
                       fill="#566e66"
                       rx="4"
                     />
-                    <text v-for="(value, index) in enrollmentData"
-                      :key="'text-'+index"
-                      :x="index * 60 + 30"
-                      y="195"
-                      text-anchor="middle"
-                      font-size="12"
-                      fill="#666"
-                    >
-                      {{ months[index] }}
-                    </text>
-                    <text v-for="(value, index) in enrollmentData"
-                      :key="'value-'+index"
-                      :x="index * 60 + 30"
-                      :y="200 - value * 2 - 5"
-                      text-anchor="middle"
-                      font-size="12"
-                      fill="#333"
-                    >
-                      {{ value }}
-                    </text>
+                    <text x="100" y="195" text-anchor="middle" font-size="14" fill="#666">Estudiantes</text>
+                    <text x="240" y="195" text-anchor="middle" font-size="14" fill="#666">Docentes</text>
+                    <text x="100" :y="200 - userStats.estudiantes * 2 - 10" text-anchor="middle" font-size="16" fill="#333">{{ userStats.estudiantes }}</text>
+                    <text x="240" :y="200 - userStats.docentes * 2 - 10" text-anchor="middle" font-size="16" fill="#333">{{ userStats.docentes }}</text>
                   </svg>
                 </div>
               </div>
 
-              <!-- grafico de torta svg: distribución de cursos por categoría (ejemplo) -->
+              <!-- Gráfico de cursos por categoría -->
               <div class="chart-card">
                 <h3>Cursos por Categoría</h3>
                 <div class="svg-chart-container">
-                  <svg viewBox="0 0 200 200" class="pie-chart">
-                    <path v-for="(slice, index) in pieSlices" 
-                      :key="index"
-                      :d="slice.path"
-                      :fill="slice.color"
-                    />
-                    <circle cx="100" cy="100" r="50" fill="#f5f7fa" />
-                    <text v-for="(label, index) in pieLabels"
-                      :key="'label-'+index"
-                      :x="label.x"
-                      :y="label.y"
-                      text-anchor="middle"
-                      font-size="10"
-                      fill="#333"
-                    >
-                      {{ label.text }}
-                    </text>
+                  <svg viewBox="0 0 400 200" class="bar-chart">
+                    <g v-for="(cat, idx) in categoriesWithCounts" :key="cat.id">
+                      <rect
+                        :x="40 + idx * 60"
+                        :y="200 - cat.count * 10"
+                        width="40"
+                        :height="cat.count * 10"
+                        :fill="barColors[idx % barColors.length]"
+                        rx="4"
+                      />
+                      <text
+                        :x="60 + idx * 60"
+                        y="195"
+                        text-anchor="middle"
+                        font-size="12"
+                        fill="#666"
+                        style="writing-mode: vertical-lr; glyph-orientation-vertical: 0;"
+                      >
+                        {{ cat.nameCategory }}
+                      </text>
+                      <text
+                        :x="60 + idx * 60"
+                        :y="200 - cat.count * 10 - 5"
+                        text-anchor="middle"
+                        font-size="14"
+                        fill="#333"
+                      >
+                        {{ cat.count }}
+                      </text>
+                    </g>
                   </svg>
                 </div>
               </div>
+            </div>
+          </div>
+          <!-- Reporte resumen -->
+          <div class="dashboard-section mt-4">
+            <h2>Reporte General</h2>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Cursos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="cat in categoriesWithCounts" :key="cat.id">
+                  <td>{{ cat.nameCategory }}</td>
+                  <td>{{ cat.count }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total Cursos</strong></td>
+                  <td><strong>{{ stats.courses }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="table table-bordered mt-3">
+              <thead>
+                <tr>
+                  <th>Tipo de Usuario</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Estudiantes</td>
+                  <td>{{ userStats.estudiantes }}</td>
+                </tr>
+                <tr>
+                  <td>Docentes</td>
+                  <td>{{ userStats.docentes }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total Usuarios</strong></td>
+                  <td><strong>{{ stats.users }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="mt-3">
+              <strong>Total Inscripciones:</strong> {{ stats.enrollments }}
             </div>
           </div>
         </div>
@@ -141,8 +192,21 @@ const stats = ref({
   enrollments: 0
 })
 
-const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun']
-const enrollmentData = ref([65, 59, 80, 81, 56, 72]) // Puedes reemplazar con datos reales
+const userStats = ref({
+  estudiantes: 0,
+  docentes: 0
+})
+
+const categories = ref([])
+const courses = ref([])
+const categoriesWithCounts = computed(() => {
+  // Devuelve [{id, nameCategory, count}]
+  return categories.value.map(cat => {
+    const count = courses.value.filter(c => c.categoryCourseId === cat.id).length;
+    return { ...cat, count };
+  });
+});
+const barColors = ['#566e66', '#6a8c7d', '#8db39e', '#b0d9bf', '#d3ffe0', '#f1e4cb', '#f9c784', '#f7b267'];
 
 const adminOptions = [
   { value: 'stats', label: 'Estadísticas', icon: 'insights' },
@@ -150,68 +214,38 @@ const adminOptions = [
 ]
 const currentView = ref('stats')
 
-// Para el gráfico de torta (ejemplo de categorías)
-const pieSlices = computed(() => {
-  const data = [35, 25, 20, 15, 5];
-  const colors = ['#566e66', '#6a8c7d', '#8db39e', '#b0d9bf', '#d3ffe0'];
-  let cumulativeAngle = 0;
-  
-  return data.map((value, index) => {
-    const angle = (value / 100) * 360;
-    const startAngle = cumulativeAngle;
-    cumulativeAngle += angle;
-    
-    const startX = 100 + Math.cos((startAngle - 90) * Math.PI / 180) * 100;
-    const startY = 100 + Math.sin((startAngle - 90) * Math.PI / 180) * 100;
-    const endX = 100 + Math.cos((cumulativeAngle - 90) * Math.PI / 180) * 100;
-    const endY = 100 + Math.sin((cumulativeAngle - 90) * Math.PI / 180) * 100;
-    
-    const largeArcFlag = angle > 180 ? 1 : 0;
-    
-    return {
-      path: `M100,100 L${startX},${startY} A100,100 0 ${largeArcFlag},1 ${endX},${endY} Z`,
-      color: colors[index]
-    };
-  });
-});
-
-const pieLabels = computed(() => {
-  const labels = ['Programación', 'Diseño', 'Marketing', 'Negocios', 'Otros'];
-  const angles = [0, 72, 144, 216, 288];
-  
-  return angles.map((angle, index) => {
-    const x = 100 + Math.cos((angle - 90) * Math.PI / 180) * 70;
-    const y = 100 + Math.sin((angle - 90) * Math.PI / 180) * 70;
-    
-    return {
-      x,
-      y,
-      text: labels[index]
-    };
-  });
-});
-
 onMounted(async () => {
   try {
     // Usuarios
     const usersRes = await axios.get('http://localhost:9999/api/v1/user/all', {
       headers: { Accept: "application/json" }
     });
-    stats.value.users = Array.isArray(usersRes.data.result) ? usersRes.data.result.length : 0;
+    const usersArr = Array.isArray(usersRes.data.result) ? usersRes.data.result : [];
+    stats.value.users = usersArr.length;
+    userStats.value.estudiantes = usersArr.filter(u => u.role && u.role.name === "Estudiante").length;
+    userStats.value.docentes = usersArr.filter(u => u.role && u.role.name === "Docente").length;
 
     // Cursos
     const coursesRes = await axios.get('http://localhost:9999/api/v1/courses/all', {
       headers: { Accept: "application/json" }
     });
-    stats.value.courses = Array.isArray(coursesRes.data.result) ? coursesRes.data.result.length : 0;
+    courses.value = Array.isArray(coursesRes.data.result) ? coursesRes.data.result : [];
+    stats.value.courses = courses.value.length;
+
+    // Categorías
+    const categoriesRes = await axios.get('http://localhost:9999/api/v1/category/all', {
+      headers: { Accept: "application/json" }
+    });
+    categories.value = Array.isArray(categoriesRes.data.result) ? categoriesRes.data.result.map(cat => ({
+      id: cat.id,
+      nameCategory: cat.nameCategory
+    })) : [];
 
     // Inscripciones
     const enrollmentsRes = await axios.get('http://localhost:9999/api/v1/enrollments/all', {
       headers: { Accept: "application/json" }
     });
     stats.value.enrollments = Array.isArray(enrollmentsRes.data.result) ? enrollmentsRes.data.result.length : 0;
-
-    // Puedes procesar enrollmentData y pieSlices con datos reales aquí si lo deseas
   } catch (e) {
     // Manejo de error
     console.error("Error al cargar estadísticas:", e);
@@ -220,7 +254,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Copia los estilos del AdminDashboardView.vue aquí para mantener la apariencia */
+/* ...estilos igual que antes... */
 .admin-main-container {
   min-height: 100vh;
   background-color: #f5f7fa;

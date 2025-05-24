@@ -12,8 +12,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "studentUserId": 1,
-  "coursesCourseId": 1,
+  "studentUserId": 2,
+  "coursesCourseId": 2,
   "enrollmentDate": "2024-09-14",
   "completed": false
 }

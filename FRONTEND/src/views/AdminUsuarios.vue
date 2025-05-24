@@ -86,11 +86,11 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
-              <input v-model="formUsuario.email" type="email" class="form-control" />
+              <input v-model="formUsuario.email" type="email" class="form-control" @input="syncUsernameWithEmail" />
             </div>
             <div class="mb-3">
               <label class="form-label">Nombre de usuario</label>
-              <input v-model="formUsuario.username" type="text" class="form-control" />
+              <input :value="formUsuario.email" type="text" class="form-control" disabled />
             </div>
             <div class="mb-3">
               <label class="form-label">Contraseña</label>
@@ -159,7 +159,6 @@ const formUsuario = ref({
   nombre: '',
   apellido: '',
   email: '',
-  username: '',
   password: '',
   rolId: ''
 })
@@ -212,7 +211,6 @@ function abrirModalCrearUsuario() {
     nombre: '',
     apellido: '',
     email: '',
-    username: '',
     password: '',
     rolId: roles.value.length > 0 ? roles.value[0].id : ''
   }
@@ -224,7 +222,6 @@ function abrirModalEditarUsuario(usuario) {
     nombre: usuario.firstName,
     apellido: usuario.lastName || '',
     email: usuario.email,
-    username: usuario.username || usuario.email,
     password: '',
     rolId: usuario.role?.roleId || ''
   }
@@ -234,12 +231,16 @@ function cerrarModalUsuario() {
   showModalUsuario.value = false
 }
 
+// Sincroniza el nombre de usuario con el email (aunque el campo está deshabilitado)
+function syncUsernameWithEmail() {
+  // No es necesario porque el campo username está deshabilitado y siempre igual a email
+}
+
 async function guardarUsuario() {
   if (
     !formUsuario.value.nombre ||
     !formUsuario.value.apellido ||
     !formUsuario.value.email ||
-    !formUsuario.value.username ||
     (!usuarioEditando.value && !formUsuario.value.password) ||
     !formUsuario.value.rolId
   ) {
@@ -252,7 +253,7 @@ async function guardarUsuario() {
     firstName: formUsuario.value.nombre,
     lastName: formUsuario.value.apellido,
     email: formUsuario.value.email,
-    username: formUsuario.value.username,
+    username: formUsuario.value.email, // SIEMPRE igual al email
     password: formUsuario.value.password,
     role: { roleId: rolId, name: selectedRole?.nombre },
     dateJoin: new Date().toISOString().split('T')[0]
@@ -335,6 +336,7 @@ async function asignarRol(usuario) {
     const selectedRole = roles.value.find(r => r.id === Number(usuario.roleId))
     const payload = {
       ...usuario,
+      username: usuario.email, // SIEMPRE igual al email
       role: { roleId: selectedRole.id, name: selectedRole.nombre }
     }
     await axios.put(`http://localhost:9999/api/v1/user/${usuario.userId}`, payload)
