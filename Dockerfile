@@ -44,7 +44,7 @@ WORKDIR /app
 
 # Copiar el JAR ejecutable del backend desde la etapa de build del backend
 # El nombre del JAR puede variar, revisa tu target/ o build/libs/
-ARG JAR_FILE=BACKEND/target/*.jar
+ARG JAR_FILE=/app/BACKEND/target/*.jar
 COPY --from=backend-build-stage ${JAR_FILE} app.jar
 
 # Exponer el puerto por defecto de Spring Boot
