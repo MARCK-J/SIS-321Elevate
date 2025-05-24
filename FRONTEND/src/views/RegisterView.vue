@@ -99,6 +99,7 @@ export default {
     const showSuccessPopup = ref(false);
     const captchaVerified = ref(false);
     const recaptchaContainer = ref(null);
+    const captchaToken = ref(""); // Nueva variable para el token de captcha
 
     // Validaciones reactivas
     const validations = reactive([
@@ -202,8 +203,11 @@ export default {
       }
     });
 
-    const onCaptchaSuccess = () => {
+    const onCaptchaSuccess = (response) => {
+      console.log("Captcha verificado:", response);
       captchaVerified.value = true;
+      // Guarda el token en una variable para usarlo en el envío
+      captchaToken.value = response;
     };
 
     // Validar la contraseña en tiempo real y actualizar colores
@@ -289,7 +293,7 @@ export default {
     // Enviar el formulario
     const handleRegisterSubmit = async () => {
       if (!captchaVerified.value) {
-        Swal.fire('Error', 'Por favor, complete el captcha', 'error');
+        Swal.fire('Error', 'Por favor, complete el CAPTCHA', 'error');
         return;
       }
       if (
@@ -335,26 +339,26 @@ export default {
       }
 
       // Construir el payload
-      const payload = {
-        firstName: firstName.value,
-        lastName: lastName.value,
-        email: email.value,
-        username: email.value,
-        password: password.value,
-        role: { roleId: Number(roleId.value) },
-        verification: false,
-        activation: false,
-        dateJoin: new Date().toISOString().split("T")[0],
-      };
-      if (selectedRole && selectedRole.name === "Docente") {
-        payload.institucionId = Number(institucionId.value);
-      }
-
       try {
-        await axios.post(
+        const payload = {
+          firstName: firstName.value,
+          lastName: lastName.value,
+          email: email.value,
+          username: email.value,
+          password: password.value,
+          role: { roleId: Number(roleId.value) },
+          verification: false,
+          activation: false,
+          dateJoin: new Date().toISOString().split("T")[0],
+          // Obtener el token directamente del evento onCaptchaSuccess
+          captchaToken: document.getElementById('g-recaptcha-response')?.value
+        };
+        
+        const response = await axios.post(
           "http://localhost:9999/api/v1/user/signup?roleId=" + roleId.value,
           payload
         );
+        
         Swal.fire({
           icon: "success",
           title: "Registro exitoso",

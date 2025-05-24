@@ -1,27 +1,26 @@
 package ucb.edu.bo.Elevate.DTO;
 
-public class LoginRequestDTO {
-    private String identifier;
+public class LoginRequestDTO extends CaptchaRequest {
+    private String email;
     private String password;
 
     public LoginRequestDTO() {
     }
 
-    public LoginRequestDTO(String identifies, String password) {
-        this.identifier = identifies;
+    public LoginRequestDTO(String email, String password) {
+        this.email = email;
         this.password = password;
     }
 
-    //dame getters y setters
-    public String getIdentifier() {
-        return identifier;
+    // Getters y setters
+    public String getEmail() {
+        return email;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    //dame getters y setters
     public String getPassword() {
         return password;
     }
@@ -30,11 +29,11 @@ public class LoginRequestDTO {
         this.password = password;
     }
 
-    //toString
+    // toString
     @Override
     public String toString() {
         return "LoginRequestDTO{" +
-                "identifier='" + identifier + '\'' +
+                "email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 '}';
     }

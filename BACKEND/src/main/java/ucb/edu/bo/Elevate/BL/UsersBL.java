@@ -6,6 +6,7 @@ import java.util.Date;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import ucb.edu.bo.Elevate.DAO.UsersDAO;
 import ucb.edu.bo.Elevate.DAO.RolesDAO;
 import ucb.edu.bo.Elevate.DAO.LogsSeguridadDAO;
 import ucb.edu.bo.Elevate.DTO.ResponseDTO;
+import ucb.edu.bo.Elevate.DTO.LoginRequestDTO;
+import ucb.edu.bo.Elevate.DTO.RegisterRequestDTO;
 import ucb.edu.bo.Elevate.Entity.Users;
 import ucb.edu.bo.Elevate.Entity.Roles;
 import ucb.edu.bo.Elevate.Entity.VerificationToken;
@@ -298,5 +301,17 @@ public class UsersBL {
     private Long getRoleIdByName(String roleName) {
         Roles role = rolesDao.findByName(roleName);
         return (role != null) ? role.getRoleId() : null;
+    }
+
+    public ResponseEntity<?> registerUser(RegisterRequestDTO request) {
+        // Implementación del registro
+        // ...
+        return null; // Reemplaza con tu implementación real
+    }
+
+    public ResponseEntity<?> loginUser(LoginRequestDTO request) {
+        // Implementación del login
+        // ...
+        return null; // Reemplaza con tu implementación real
     }
 }

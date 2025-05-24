@@ -1,17 +1,38 @@
 <template>
     <div class="login">
       <router-link to="/" class="back-link">Regresar</router-link>
-      <LoginCard />
+      <LoginCard @submit="onSubmit" />
     </div>
   </template>
   
   <script>
   import LoginCard from "/src/components/LoginCard.vue";
+  import axios from 'axios';
   
   export default {
     name: "login-view",
     components: {
       LoginCard
+    },
+    methods: {
+      async onSubmit() {
+        try {
+          // Obtener el token captcha (ejemplo usando reCAPTCHA)
+          const captchaToken = await this.$recaptchaInstance.execute('login');
+          
+          // Incluir el token en la solicitud
+          const userData = {
+            email: this.email,
+            password: this.password,
+            captchaToken: captchaToken
+          };
+          
+          const response = await axios.post('/api/v1/auth/login', userData);
+          // Procesar respuesta...
+        } catch (error) {
+          // Manejar error...
+        }
+      }
     }
   };
   </script>
