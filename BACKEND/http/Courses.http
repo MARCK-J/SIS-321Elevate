@@ -20,7 +20,7 @@ Accept: application/json
   "abilities": "Conocimientos básicos de programación.",
   "available": true,
   "categoryCourseId": 1,
-  "teacherUserId": 1
+  "teacherUserId": 3
 }
 
 ### Crear un nuevo curso

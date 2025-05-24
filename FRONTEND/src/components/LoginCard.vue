@@ -142,10 +142,10 @@ export default {
               icon: "info",
             });
             this.iniciarSesion(userId, roleId);
-          } else if (roleName === "AdminUsuarios") {
+          } else if (roleName === "OSI") {
             Swal.fire({
-              title: "Administrador de Usuarios",
-              text: "Has iniciado sesión como Administrador de Usuarios.",
+              title: "Oficial de Seguridad de Informacion",
+              text: "Has iniciado sesión como Oficial de Seguridad de Informacion.",
               icon: "info",
             });
             this.iniciarSesion(userId, roleId);

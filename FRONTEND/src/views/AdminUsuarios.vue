@@ -26,9 +26,12 @@
               <td>{{ usuario.firstName }} {{ usuario.lastName }}</td>
               <td>{{ usuario.email }}</td>
               <td>
-                <select v-model="usuario.role" @change="asignarRol(usuario)" class="form-select form-select-sm">
+                <select v-model="usuario.roleId" @change="asignarRol(usuario)" class="form-select form-select-sm">
                   <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.nombre }}</option>
                 </select>
+                <div v-if="usuario.role && usuario.role.name" class="mt-1 text-muted small">
+                  Actual: {{ usuario.role.name }}
+                </div>
               </td>
               <td>
                 <button class="btn btn-sm btn-warning me-2" @click="abrirModalEditarUsuario(usuario)">Editar</button>
@@ -47,12 +50,17 @@
             <tr>
               <th>Rol</th>
               <th>Descripción</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="rol in roles" :key="rol.id">
               <td>{{ rol.nombre }}</td>
               <td>{{ rol.descripcion }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-2" @click="abrirModalEditarRol(rol)">Editar</button>
+                <button class="btn btn-sm btn-danger" @click="eliminarRol(rol)">Eliminar</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -102,6 +110,32 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal Crear/Editar Rol -->
+    <div class="modal fade" tabindex="-1" :class="{ show: showModalRol }" style="display: block;" v-if="showModalRol">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ rolEditando ? 'Editar Rol' : 'Crear Rol' }}</h5>
+            <button type="button" class="btn-close" @click="cerrarModalRol"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input v-model="formRol.nombre" type="text" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <input v-model="formRol.descripcion" type="text" class="form-control" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="cerrarModalRol">Cancelar</button>
+            <button class="btn btn-primary" @click="guardarRol">{{ rolEditando ? 'Guardar Cambios' : 'Crear Rol' }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -117,12 +151,7 @@ const breadcrumbs = [
 ]
 
 const usuarios = ref([])
-const roles = ref([
-  { id: 1, nombre: 'Estudiante', descripcion: 'Acceso a cursos' },
-  { id: 2, nombre: 'Docente', descripcion: 'Gestión de cursos' },
-  { id: 3, nombre: 'Admin Página', descripcion: 'Administrador de Página' },
-  { id: 4, nombre: 'Admin Usuarios', descripcion: 'Administrador de Usuarios' }
-])
+const roles = ref([])
 
 const showModalUsuario = ref(false)
 const usuarioEditando = ref(null)
@@ -132,18 +161,43 @@ const formUsuario = ref({
   email: '',
   username: '',
   password: '',
-  rolId: 1
+  rolId: ''
+})
+
+const showModalRol = ref(false)
+const rolEditando = ref(null)
+const formRol = ref({
+  nombre: '',
+  descripcion: ''
 })
 
 onMounted(() => {
+  cargarRoles()
   cargarUsuarios()
 })
+
+async function cargarRoles() {
+  try {
+    const response = await axios.get('http://localhost:9999/api/v1/roles/all')
+    const rolesArray = response.data?.result?.result || response.data?.result || []
+    roles.value = rolesArray.map(r => ({
+      id: r.roleId,
+      nombre: r.name,
+      descripcion: r.description
+    }))
+  } catch (error) {
+    Swal.fire('Error', 'No se pudieron cargar los roles', 'error')
+  }
+}
 
 async function cargarUsuarios() {
   try {
     const response = await axios.get('http://localhost:9999/api/v1/user/all')
     if (response.data.code === "200-OK") {
-      usuarios.value = response.data.result
+      usuarios.value = response.data.result.map(u => ({
+        ...u,
+        roleId: u.role?.roleId || '', // para selects
+      }))
     } else {
       Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error')
     }
@@ -160,7 +214,7 @@ function abrirModalCrearUsuario() {
     email: '',
     username: '',
     password: '',
-    rolId: 1
+    rolId: roles.value.length > 0 ? roles.value[0].id : ''
   }
   showModalUsuario.value = true
 }
@@ -170,9 +224,9 @@ function abrirModalEditarUsuario(usuario) {
     nombre: usuario.firstName,
     apellido: usuario.lastName || '',
     email: usuario.email,
-    username: usuario.username || usuario.email.split('@')[0],
+    username: usuario.username || usuario.email,
     password: '',
-    rolId: usuario.role
+    rolId: usuario.role?.roleId || ''
   }
   showModalUsuario.value = true
 }
@@ -186,19 +240,21 @@ async function guardarUsuario() {
     !formUsuario.value.apellido ||
     !formUsuario.value.email ||
     !formUsuario.value.username ||
-    (!usuarioEditando.value && !formUsuario.value.password)
+    (!usuarioEditando.value && !formUsuario.value.password) ||
+    !formUsuario.value.rolId
   ) {
     Swal.fire('Error', 'Todos los campos son obligatorios', 'error')
     return
   }
   const rolId = Number(formUsuario.value.rolId)
+  const selectedRole = roles.value.find(r => r.id === rolId)
   const payload = {
     firstName: formUsuario.value.nombre,
     lastName: formUsuario.value.apellido,
     email: formUsuario.value.email,
     username: formUsuario.value.username,
     password: formUsuario.value.password,
-    role: rolId,
+    role: { roleId: rolId, name: selectedRole?.nombre },
     dateJoin: new Date().toISOString().split('T')[0]
   }
   try {
@@ -220,7 +276,7 @@ async function guardarUsuario() {
           return
         }
         await axios.post(
-          'http://localhost:9999/api/v1/user/admin/create',
+          `http://localhost:9999/api/v1/user/admin/create?roleId=${rolId}`,
           payload,
           {
             headers: {
@@ -234,7 +290,7 @@ async function guardarUsuario() {
       } else {
         // Crear estudiante/docente usando endpoint normal
         await axios.post(
-          'http://localhost:9999/api/v1/user/signup',
+          `http://localhost:9999/api/v1/user/signup?roleId=${rolId}`,
           payload,
           {
             headers: {
@@ -276,9 +332,10 @@ async function eliminarUsuario(usuario) {
 
 async function asignarRol(usuario) {
   try {
+    const selectedRole = roles.value.find(r => r.id === Number(usuario.roleId))
     const payload = {
       ...usuario,
-      role: usuario.role
+      role: { roleId: selectedRole.id, name: selectedRole.nombre }
     }
     await axios.put(`http://localhost:9999/api/v1/user/${usuario.userId}`, payload)
     Swal.fire('Éxito', 'Rol actualizado correctamente', 'success')
@@ -286,6 +343,84 @@ async function asignarRol(usuario) {
   } catch (error) {
     Swal.fire('Error', error.response?.data?.message || 'No se pudo actualizar el rol', 'error')
   }
+}
+
+// --- Roles CRUD ---
+function abrirModalCrearRol() {
+  rolEditando.value = null
+  formRol.value = {
+    nombre: '',
+    descripcion: ''
+  }
+  showModalRol.value = true
+}
+function abrirModalEditarRol(rol) {
+  rolEditando.value = rol
+  formRol.value = {
+    nombre: rol.nombre,
+    descripcion: rol.descripcion
+  }
+  showModalRol.value = true
+}
+function cerrarModalRol() {
+  showModalRol.value = false
+}
+
+async function guardarRol() {
+  if (!formRol.value.nombre || !formRol.value.descripcion) {
+    Swal.fire('Error', 'Todos los campos son obligatorios', 'error')
+    return
+  }
+  try {
+    if (rolEditando.value) {
+      // Modificar rol existente
+      await axios.put(
+        `http://localhost:9999/api/v1/roles/${rolEditando.value.id}`,
+        {
+          name: formRol.value.nombre,
+          description: formRol.value.descripcion,
+          creationDate: new Date().toISOString().split('T')[0]
+        }
+      )
+      Swal.fire('Éxito', 'Rol actualizado correctamente', 'success')
+    } else {
+      // Crear rol
+      await axios.post(
+        `http://localhost:9999/api/v1/roles/create`,
+        {
+          name: formRol.value.nombre,
+          description: formRol.value.descripcion,
+          creationDate: new Date().toISOString().split('T')[0]
+        }
+      )
+      Swal.fire('Éxito', 'Rol creado correctamente', 'success')
+    }
+    cerrarModalRol()
+    cargarRoles()
+  } catch (error) {
+    Swal.fire('Error', error.response?.data?.message || 'No se pudo guardar el rol', 'error')
+  }
+}
+
+async function eliminarRol(rol) {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: `¿Deseas eliminar el rol ${rol.nombre}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:9999/api/v1/roles/${rol.id}`)
+        Swal.fire('Eliminado', 'Rol eliminado correctamente', 'success')
+        cargarRoles()
+      } catch (error) {
+        Swal.fire('Error', error.response?.data?.message || 'No se pudo eliminar el rol', 'error')
+      }
+    }
+  })
 }
 </script>
 

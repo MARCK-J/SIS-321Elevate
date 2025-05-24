@@ -3,6 +3,7 @@ package ucb.edu.bo.Elevate.BL;
 import java.util.List;
 import java.util.UUID;
 import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +21,8 @@ import ucb.edu.bo.Elevate.email.Service.MailService;
 import ucb.edu.bo.Elevate.Entity.Instituciones;
 import ucb.edu.bo.Elevate.DAO.InstitucionesDAO;
 import ucb.edu.bo.Elevate.DAO.VerificationTokenDAO;
+import ucb.edu.bo.Elevate.BL.LogsSeguridadBL;
+import ucb.edu.bo.Elevate.Entity.LogsSeguridad;
 
 @Service
 public class UsersBL {
@@ -31,6 +34,8 @@ public class UsersBL {
     private VerificationTokenDAO verificationTokenDao;
     @Autowired
     private RolesDAO rolesDao;
+    @Autowired
+    private LogsSeguridadBL logsSeguridadBL;
 
     @Autowired
     public UsersBL(
@@ -39,7 +44,8 @@ public class UsersBL {
         MailService mailService,
         InstitucionesDAO institucionesDao,
         VerificationTokenDAO verificationTokenDao,
-        RolesDAO rolesDao
+        RolesDAO rolesDao,
+        LogsSeguridadBL logsSeguridadBL
     ) {
         this.usersDao = usersDao;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -47,13 +53,25 @@ public class UsersBL {
         this.institucionesDao = institucionesDao;
         this.verificationTokenDao = verificationTokenDao;
         this.rolesDao = rolesDao;
+        this.logsSeguridadBL = logsSeguridadBL;
+    }
+
+    // Método privado para registrar logs
+    private void logAction(Long userId, String action, String details, String ipAddress) {
+        LogsSeguridad log = new LogsSeguridad();
+        log.setUserId(userId);
+        log.setAction(action);
+        log.setDetails(details);
+        log.setIpAddress(ipAddress != null ? ipAddress : "N/A");
+        log.setTimestamp(LocalDateTime.now());
+        logsSeguridadBL.createLog(log);
     }
 
     // Registro (Sign-up)
     public Users signUp(Users user, Long roleId) throws UserException {
-        // Verificar si el email ya está registrado
         Users existingUser = usersDao.findByEmail(user.getEmail());
         if (existingUser != null) {
+            logAction(null, "REGISTER_FAILED", "Intento de registro con email ya registrado: " + user.getEmail(), null);
             throw new UserException("El correo ya está registrado");
         }
 
@@ -63,10 +81,12 @@ public class UsersBL {
         user.setUserId(newUserId);
 
         if (!isValidEmail(user.getEmail())) {
+            logAction(null, "REGISTER_FAILED", "Formato de correo inválido: " + user.getEmail(), null);
             throw new UserException("El correo electrónico no tiene un formato válido.");
         }
 
         if (!isPasswordSecure(user.getPassword(), user)) {
+            logAction(null, "REGISTER_FAILED", "Contraseña insegura para: " + user.getEmail(), null);
             throw new UserException("La contraseña no cumple con los requisitos de seguridad.");
         }
 
@@ -77,15 +97,18 @@ public class UsersBL {
         if ("Docente".equalsIgnoreCase(role.getName())) {
             Instituciones institucion = institucionesDao.findById(user.getInstitucionId()).orElse(null);
             if (institucion == null) {
+                logAction(null, "REGISTER_FAILED", "Institución no válida para docente: " + user.getEmail(), null);
                 throw new UserException("Debe seleccionar una institución válida.");
             }
             String dominio = institucion.getDominioInstitucional();
             if (!user.getEmail().endsWith("@" + dominio)) {
+                logAction(null, "REGISTER_FAILED", "Dominio de correo no coincide para docente: " + user.getEmail(), null);
                 throw new UserException("El correo no corresponde al dominio institucional: " + dominio);
             }
         }
 
         if ("AdminPagina".equalsIgnoreCase(role.getName()) || "AdminUsuarios".equalsIgnoreCase(role.getName())) {
+            logAction(null, "REGISTER_FAILED", "Intento de registro como administrador: " + user.getEmail(), null);
             throw new UserException("No puedes registrarte como administrador. Contacta al administrador del sistema.");
         }
 
@@ -111,7 +134,7 @@ public class UsersBL {
             )
         );
 
-        // Ya no se registra en Student ni Teacher ni AdminPagina ni AdminUsuarios
+        logAction(savedUser.getUserId(), "USER_REGISTERED", "Usuario registrado con rol " + savedUser.getRole().getName(), null);
         return savedUser;
     }
 
@@ -119,11 +142,14 @@ public class UsersBL {
     public Users login(String email, String password) throws UserException {
         Users user = usersDao.findByEmail(email);
         if (user == null) {
+            logAction(null, "LOGIN_FAILED", "Intento de login fallido para: " + email, null);
             throw new UserException("Correo o contraseña incorrectos");
         }
         if (!bCryptPasswordEncoder.matches(password, user.getPassword())) {
+            logAction(user.getUserId(), "LOGIN_FAILED", "Contraseña incorrecta para: " + email, null);
             throw new UserException("Correo o contraseña incorrectos");
         }
+        logAction(user.getUserId(), "LOGIN_SUCCESS", "Inicio de sesión exitoso", null);
         user.setPassword(null);
         return user;
     }
@@ -153,13 +179,16 @@ public class UsersBL {
         if (userDetails.getRole() != null) {
             user.setRole(userDetails.getRole());
         }
-        return usersDao.save(user);
+        Users updated = usersDao.save(user);
+        logAction(userId, "USER_UPDATED", "Usuario actualizado", null);
+        return updated;
     }
 
     // Eliminar un usuario
     public void deleteUser(Long userId) throws UserException {
         Users user = usersDao.findById(userId).orElseThrow(() -> new UserException("Usuario no encontrado"));
         usersDao.delete(user);
+        logAction(userId, "USER_DELETED", "Usuario eliminado", null);
     }
 
     // Obtener usuarios por rol
@@ -183,6 +212,7 @@ public class UsersBL {
     public ResponseDTO recoverPassword(String email) throws UserException {
         Users user = usersDao.findByEmail(email);
         if (user == null) {
+            logAction(null, "RECOVER_PASSWORD_FAILED", "Intento de recuperación para email inexistente: " + email, null);
             throw new UserException("No user found with the provided email");
         }
         String tempPassword = generateTemporaryPassword();
@@ -190,6 +220,7 @@ public class UsersBL {
         usersDao.save(user);
         MailStructure mailStructure = new MailStructure("Password Recovery", "Your temporary password is: " + tempPassword);
         mailService.sendMail(email, mailStructure);
+        logAction(user.getUserId(), "RECOVER_PASSWORD", "Recuperación de contraseña solicitada", null);
         return new ResponseDTO("A temporary password has been sent to your email");
     }
 
@@ -200,10 +231,12 @@ public class UsersBL {
     public ResponseDTO changePassword(String email, String newPassword) throws UserException {
         Users user = usersDao.findByEmail(email);
         if (user == null) {
+            logAction(null, "CHANGE_PASSWORD_FAILED", "Intento de cambio de contraseña para email inexistente: " + email, null);
             throw new UserException("No user found with the provided email");
         }
         user.setPassword(bCryptPasswordEncoder.encode(newPassword));
         usersDao.save(user);
+        logAction(user.getUserId(), "CHANGE_PASSWORD", "Contraseña cambiada", null);
         return new ResponseDTO("Password has been changed successfully");
     }
 
@@ -242,6 +275,7 @@ public class UsersBL {
         user.setActivation(false);
         user.setRole(role);
         Users savedUser = usersDao.save(user);
+        logAction(savedUser.getUserId(), "ADMIN_CREATED", "Administrador creado con rol " + savedUser.getRole().getName(), null);
         // Enviar correo de verificación si corresponde (igual que en signUp)
         return savedUser;
     }
@@ -251,10 +285,10 @@ public class UsersBL {
     }
 
     public boolean existsAnyAdmin() {
-    List<Users> adminsPagina = usersDao.findUsersByRoleId(getRoleIdByName("AdminPagina"));
-    List<Users> adminsUsuarios = usersDao.findUsersByRoleId(getRoleIdByName("AdminUsuarios"));
-    return (!adminsPagina.isEmpty() || !adminsUsuarios.isEmpty());
-}
+        List<Users> adminsPagina = usersDao.findUsersByRoleId(getRoleIdByName("AdminPagina"));
+        List<Users> adminsUsuarios = usersDao.findUsersByRoleId(getRoleIdByName("AdminUsuarios"));
+        return (!adminsPagina.isEmpty() || !adminsUsuarios.isEmpty());
+    }
 
     private Long getRoleIdByName(String roleName) {
         Roles role = rolesDao.findByName(roleName);
