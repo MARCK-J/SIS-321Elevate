@@ -179,7 +179,7 @@ public class UsersAPI {
                 }
                 Users admin = userBl.getUserById(adminUserId);
                 String adminRole = admin.getRole().getName();
-                if (!"AdminPagina".equalsIgnoreCase(adminRole) && !"AdminUsuarios".equalsIgnoreCase(adminRole)) {
+                if (!"AdminPagina".equalsIgnoreCase(adminRole) && !"AdminUsuarios".equalsIgnoreCase(adminRole) && !"OSI".equalsIgnoreCase(adminRole)) {
                     return new ResponseDTO("USER-403", "No tienes permisos para crear administradores.");
                 }
             }

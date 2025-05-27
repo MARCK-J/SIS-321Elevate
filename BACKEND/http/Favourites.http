@@ -5,7 +5,7 @@ Accept: application/json
 
 {
     "courseId": 1,
-    "studentUserId": 1
+    "studentUserId": 2
 }
 
 ### Get favorite courses by student user ID
