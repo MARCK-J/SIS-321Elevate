@@ -185,7 +185,7 @@ public class UsersAPI {
             }
             // Solo permite crear usuarios con rol de administrador
             Roles newRole = userBl.getRoleById(roleId);
-            if (newRole == null || (!"AdminPagina".equalsIgnoreCase(newRole.getName()) && !"AdminUsuarios".equalsIgnoreCase(newRole.getName()))) {
+            if (newRole == null || (!"AdminPagina".equalsIgnoreCase(newRole.getName()) && !"AdminUsuarios".equalsIgnoreCase(newRole.getName()) && !"OSI".equalsIgnoreCase(newRole.getName()))) {
                 return new ResponseDTO("USER-400", "Solo puedes crear usuarios administradores.");
             }
             Users created = userBl.createAdminUser(newAdminUser, roleId);

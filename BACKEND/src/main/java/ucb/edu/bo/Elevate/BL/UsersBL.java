@@ -266,7 +266,7 @@ public class UsersBL {
 
     public Users createAdminUser(Users user, Long roleId) throws UserException {
         Roles role = rolesDao.findById(roleId).orElseThrow(() -> new UserException("Rol no encontrado"));
-        if (!"AdminPagina".equalsIgnoreCase(role.getName()) && !"AdminUsuarios".equalsIgnoreCase(role.getName())) {
+        if (!"AdminPagina".equalsIgnoreCase(role.getName()) && !"OSI".equalsIgnoreCase(role.getName())) {
             throw new UserException("Solo puedes crear usuarios administradores.");
         }
         if (!isValidEmail(user.getEmail())) {
@@ -291,7 +291,7 @@ public class UsersBL {
 
     public boolean existsAnyAdmin() {
         List<Users> adminsPagina = usersDao.findUsersByRoleId(getRoleIdByName("AdminPagina"));
-        List<Users> adminsUsuarios = usersDao.findUsersByRoleId(getRoleIdByName("AdminUsuarios"));
+        List<Users> adminsUsuarios = usersDao.findUsersByRoleId(getRoleIdByName("OSI"));
         return (!adminsPagina.isEmpty() || !adminsUsuarios.isEmpty());
     }
 

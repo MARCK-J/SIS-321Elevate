@@ -1,30 +1,4 @@
-### Crear usuario administrador (requiere ser admin)
-POST http://localhost:9999/api/v1/user/admin/create?roleId=4
-Content-Type: application/json
-Accept: application/json
-adminUserId: 1
 
-{
-  "firstName": "Ana",
-  "lastName": "Rojas",
-  "email": "ana.adminusuario@ucb.edu.bo",
-  "username": "ana.adminusuario@ucb.edu.bo",
-  "password": "AdminSeguro123!",
-  "institucionId": 1,
-  "verification": false,
-  "activation": false,
-  "dateJoin": "2024-06-01T00:00:00.000Z"
-}
-
-### Inicio de sesión (Log-in)
-POST http://localhost:9999/api/v1/user/login
-Content-Type: application/json
-Accept: application/json
-
-{
-  "identifier": "ana.adminusuario@ucb.edu.bo",
-  "password": "AdminSeguro123!"
-}
 
 ### Inicio de sesión (Log-in)
 POST http://localhost:9999/api/v1/user/login
