@@ -39,15 +39,27 @@ const breadcrumbs = [
 ]
 
 const logs = ref([])
+const usersMap = ref({})
+
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get('http://localhost:9999/api/v1/user/all')
+    const usersArr = response.data.result || []
+    usersMap.value = Object.fromEntries(
+      usersArr.map(u => [u.userId, u.email])
+    )
+  } catch (e) {
+    usersMap.value = {}
+  }
+}
 
 const fetchLogs = async () => {
   try {
     const response = await axios.get('http://localhost:9999/api/v1/logs-seguridad/all')
-    // El backend retorna un array de logs con logId, userId, action, details, ipAddress, timestamp
     logs.value = (response.data.result || []).map(log => ({
       id: log.logId,
       fecha: log.timestamp ? new Date(log.timestamp).toLocaleString() : '',
-      usuario: log.userId ?? 'N/A', // Si quieres mostrar el email/nombre, debes hacer otra petición aquí
+      usuario: usersMap.value[log.userId] || log.userId || 'N/A',
       accion: log.action,
       detalle: log.details
     }))
@@ -56,5 +68,8 @@ const fetchLogs = async () => {
   }
 }
 
-onMounted(fetchLogs)
+onMounted(async () => {
+  await fetchUsers()
+  await fetchLogs()
+})
 </script>
