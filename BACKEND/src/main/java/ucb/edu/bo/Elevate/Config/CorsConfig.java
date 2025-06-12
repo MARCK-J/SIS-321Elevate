@@ -30,9 +30,11 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*"); // Permitir solicitudes desde cualquier origen
-        config.addAllowedHeader("*"); // Permitir cualquier encabezado
-        config.addAllowedMethod("*"); // Permitir cualquier método (GET, POST, etc.)
+        // SOLO permite tu dominio de frontend en producción
+        config.addAllowedOrigin("http://localhost:5173"); // Cambia por tu dominio real
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setAllowCredentials(true); // Si usas cookies/sesiones
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

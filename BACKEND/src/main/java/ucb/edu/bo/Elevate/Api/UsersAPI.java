@@ -1,6 +1,8 @@
 package ucb.edu.bo.Elevate.Api;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import ucb.edu.bo.Elevate.BL.UsersBL;
@@ -16,6 +18,7 @@ import ucb.edu.bo.Elevate.DAO.UsersDAO;
 import ucb.edu.bo.Elevate.DAO.VerificationTokenDAO;
 
 import java.util.Date;
+import jakarta.validation.Valid;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -36,27 +39,41 @@ public class UsersAPI {
 
     // Endpoint para el registro (Sign-up)
     @PostMapping("/signup")
-    public ResponseDTO signUp(@RequestBody Users user, @RequestParam("roleId") Long roleId) {
+    public ResponseDTO signUp(@Valid @RequestBody Users user, BindingResult bindingResult, @RequestParam("roleId") Long roleId) {
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return new ResponseDTO("USER-VALIDATION-ERROR", errorMsg);
+        }
         try {
             Users createdUser = userBl.signUp(user, roleId);
             LOGGER.info("Usuario registrado correctamente");
             return new ResponseDTO(createdUser);
         } catch (UserException e) {
             LOGGER.error("Error en el registro del usuario", e);
-            return new ResponseDTO("USER-1000", e.getMessage());
+            return new ResponseDTO("USER-1000", "No se pudo completar el registro. Intente más tarde.");
+        } catch (Exception e) {
+            LOGGER.error("Error inesperado en el registro del usuario", e);
+            return new ResponseDTO("USER-1000", "Ocurrió un error inesperado. Intente más tarde.");
         }
     }
 
     // Endpoint para el inicio de sesión (Log-in)
     @PostMapping("/login")
-    public ResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseDTO login(@Valid @RequestBody LoginRequestDTO loginRequestDTO, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return new ResponseDTO("USER-VALIDATION-ERROR", errorMsg);
+        }
         try {
             Users user = userBl.login(loginRequestDTO.getIdentifier(), loginRequestDTO.getPassword());
             LOGGER.info("Inicio de sesión exitoso");
             return new ResponseDTO(user);
         } catch (UserException e) {
-            LOGGER.error("Error en el inicio de sesión", e);
-            return new ResponseDTO("USER-1001", e.getMessage());
+            LOGGER.warn("Intento de inicio de sesión fallido: {}", e.getMessage());
+            return new ResponseDTO("USER-1001", "Credenciales inválidas.");
+        } catch (Exception e) {
+            LOGGER.error("Error inesperado en el inicio de sesión", e);
+            return new ResponseDTO("USER-1001", "Ocurrió un error inesperado. Intente más tarde.");
         }
     }
 
